@@ -1,6 +1,7 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
-# from app.services.extraction import extract_text_from_file
 from app.services.localextraction import extract_text_from_file
+from app.services.analysis import perform_dynamic_bias_profiling
+from app.services.vector_audit import verify_contextual_bias
 
 router = APIRouter()
 
@@ -12,17 +13,33 @@ async def ingest_document(file: UploadFile = File(...)):
 
     try:
         content = await file.read()
-        # extracted_text = await extract_text_from_file(content, file.content_type) gemini call to extract text from file
         extracted_text = await extract_text_from_file(
             content,
             file.content_type
         )
+        bias_results = await perform_dynamic_bias_profiling(extracted_text)
+        if "groups" in bias_results["dynamic_profile"]:
+            quantitative_audit = await verify_contextual_bias(
+                extracted_text, 
+                bias_results["dynamic_profile"]["groups"]
+            )
+        else:
+            quantitative_audit = []
+            
         return {
             "filename": file.filename,
-            "status": "Extraction Successful",
-            "content_length": len(extracted_text),
-            "extracted_content_preview": extracted_text[:500] + "..."
+            "audit_metadata": {
+                "engine_v": "2.0-contextual",
+                "status": "Verified"
+            },
+            "findings": {
+                "qualitative_analysis": bias_results,
+                "quantitative_verification": quantitative_audit
+            }
         }
-
+        
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+    
+    

@@ -8,3 +8,6 @@ pymupdf
 python-docx
 pytesseract 
 pillow
+spacy
+groq
+sentence-transformers
