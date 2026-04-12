@@ -2,6 +2,7 @@ from fastapi import APIRouter, UploadFile, File, HTTPException
 from app.services.localextraction import extract_text_from_file
 from app.services.analysis import perform_dynamic_bias_profiling
 from app.services.vector_audit import verify_contextual_bias
+from app.services.remediation import generate_remediation_plan
 
 router = APIRouter()
 
@@ -17,7 +18,9 @@ async def ingest_document(file: UploadFile = File(...)):
             content,
             file.content_type
         )
+        print("File validation doen!!")
         bias_results = await perform_dynamic_bias_profiling(extracted_text)
+
         if "groups" in bias_results["dynamic_profile"]:
             quantitative_audit = await verify_contextual_bias(
                 extracted_text, 
@@ -25,7 +28,9 @@ async def ingest_document(file: UploadFile = File(...)):
             )
         else:
             quantitative_audit = []
-            
+        print("first setp is doen!!!")    
+
+        recommendation = await generate_remediation_plan(bias_results["dynamic_profile"])
         return {
             "filename": file.filename,
             "audit_metadata": {
@@ -35,7 +40,8 @@ async def ingest_document(file: UploadFile = File(...)):
             "findings": {
                 "qualitative_analysis": bias_results,
                 "quantitative_verification": quantitative_audit
-            }
+            },
+            "recommendation": recommendation
         }
         
     except Exception as e:
