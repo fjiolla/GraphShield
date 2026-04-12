@@ -1,0 +1,45 @@
+# ============================================================
+# Graph Bias Explainability Pipeline — Configuration
+# ============================================================
+
+# --- Graph settings ---
+graph:
+  sensitive_attribute: "group"   # Node attribute that defines groups
+  directed: false                # Whether the graph is directed
+
+# --- Bias detection methods ---
+bias_methods:
+  structural: true
+  fairness: true
+  edge: true
+
+# --- Feature engineering parameters ---
+pagerank:
+  damping_factors: [0.85]        # List for multi-param sweep
+
+community:
+  resolutions: [1.0]            # List for multi-param sweep (Louvain)
+
+# --- Explainability ---
+explainability:
+  # use_vertex_ai: true
+  # model_name: "gemini-2.5-flash"
+  use_groq_ai: true
+  model_name: "llama-3.1-8b-instant"
+  fallback_to_template: true     # Use template if LLM fails
+
+# --- Evaluation ---
+evaluation:
+  multi_param: false             # Enable multi-parameter experimentation
+  select_best_by: "confidence"   # Metric to rank experiments
+
+# --- Google Cloud ---
+gcp:
+  project_id: ""                 # Set via env var GCP_PROJECT_ID if empty
+  location: "us-central1"
+  bucket: ""                     # Set via env var GCP_BUCKET if empty
+
+# --- Server ---
+server:
+  host: "0.0.0.0"
+  port: 8000
