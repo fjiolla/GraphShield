@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.v1.api import api_router
 from app.core.config import settings
+from app.api.v1.api import api_router
+import logging 
 
 app = FastAPI(
     title=settings.PROJECT_NAME,

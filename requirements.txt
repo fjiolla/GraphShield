@@ -1,4 +1,5 @@
 pydantic_settings
+pandas
 fastapi
 uvicorn
 google-genai
@@ -11,3 +12,6 @@ pillow
 spacy
 groq
 sentence-transformers
+chardet
+python-magic
+openpyxl
