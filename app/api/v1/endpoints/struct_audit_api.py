@@ -1,4 +1,5 @@
 import os
+import time
 import shutil
 from fastapi import APIRouter, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
@@ -32,12 +33,14 @@ async def run_audit():
         table = _state["table_name"]
         classification = struct_classify_columns(table)
         audit = struct_run_fairness_audit(table, classification)
+        # Wait 61s for Groq free-tier TPM rate limit to reset
+        time.sleep(61)
         report = struct_generate_report(audit, classification)
         _state["report"] = report
+        
         file_path = _state.get("file_path")
         if file_path and os.path.exists(file_path):
             os.remove(file_path)
-        
         return {
             "status": "success",
             "bias_detected": report.get("bias_detected"),

@@ -1,3 +1,11 @@
+"""
+struct_intelligence.py
+Module 2: Hybrid Accuracy Intelligence
+Uses Gemini Pro (via Google AI Studio) for semantic classification of dataset columns.
+Samples 50 rows for API efficiency; classifies columns as:
+  Target | Sensitive | Proxy | Safe
+"""
+
 import json
 import logging
 import re
@@ -7,6 +15,7 @@ from typing import Optional
 
 import pandas as pd
 
+# from app.core.struct_local_config import GEMINI_SAMPLE_LIMIT, struct_get_gemini_model
 from app.services.struct_ingestion import struct_get_db_connection
 from app.core.struct_local_config import (
     struct_get_groq_client,
@@ -32,9 +41,12 @@ STRUCT_TYPE_DESCRIPTIONS = {
 }
 
 
+# ─────────────────────────────────────────────
+# Sample Extraction
+# ─────────────────────────────────────────────
 def struct_sample_table(
     table_name: str,
-    limit: int = 50,
+    limit: int = 10,
     conn: Optional[sqlite3.Connection] = None,
 ) -> pd.DataFrame:
     """
@@ -91,14 +103,12 @@ def struct_build_column_profile(df: pd.DataFrame) -> dict:
     for col in df.columns:
         series = df[col].dropna()
         unique_vals = series.nunique()
-        sample_vals = series.unique()[:5].tolist()
+        sample_vals = series.unique()[:3].tolist()
 
         profile[col] = {
             "dtype": str(df[col].dtype),
-            "null_count": int(df[col].isna().sum()),
             "unique_count": unique_vals,
             "sample_values": [str(v) for v in sample_vals],
-            "high_cardinality": unique_vals > 50,
         }
     return profile
 
@@ -117,42 +127,17 @@ def struct_build_classification_prompt(column_profile: dict) -> str:
     Returns:
         Prompt string ready for Gemini.
     """
-    col_descriptions = json.dumps(column_profile, indent=2)
+    col_descriptions = json.dumps(column_profile, separators=(',', ':'))
 
     prompt = textwrap.dedent(f"""
-    You are an expert AI fairness auditor specializing in algorithmic bias detection.
+    Classify each column as Target, Sensitive, Proxy, or Safe.
+    Target=outcome variable. Sensitive=protected attribute(race,gender,age). Proxy=correlates with sensitive attribute. Safe=legitimate feature.
 
-    Below is a profile of columns from a dataset. For EACH column, classify it into
-    EXACTLY ONE of these four types:
-
-    - "Target": The outcome/label variable the model predicts.
-    - "Sensitive": A legally/ethically protected attribute (race, gender, age, religion, etc.).
-    - "Proxy": A seemingly neutral feature that INDIRECTLY encodes a sensitive attribute
-      and can introduce bias. You MUST explain the proxy relationship clearly.
-      Example: "Zip_Code" → Proxy for Race/Income due to residential segregation.
-    - "Safe": A legitimate, non-biasing feature safe for modeling.
-
-    COLUMN PROFILES:
+    COLUMNS:
     {col_descriptions}
 
-    CRITICAL INSTRUCTIONS:
-    1. Return ONLY valid JSON. No markdown, no preamble, no explanation outside JSON.
-    2. For EVERY column, explain your reasoning in "reason".
-    3. Proxy columns MUST clearly name the sensitive attribute they proxy.
-    4. For high-cardinality columns (unique_count > 50), carefully assess proxy risk.
-    5. Empty or mostly-null columns should be classified as "Safe" with a note.
-
-    OUTPUT FORMAT (STRICT — no deviations):
-    {{
-      "column_name_1": {{
-        "type": "Target | Sensitive | Proxy | Safe",
-        "reason": "Detailed explanation of classification and any bias risk."
-      }},
-      "column_name_2": {{
-        "type": "Target | Sensitive | Proxy | Safe",
-        "reason": "..."
-      }}
-    }}
+    Return ONLY valid JSON. No markdown.
+    Format: {{"col_name":{{"type":"Target|Sensitive|Proxy|Safe","reason":"brief reason"}}}}
     """).strip()
 
     return prompt
@@ -307,7 +292,7 @@ def struct_classify_columns(
                 {"role": "system", "content": "You are a data bias detection expert. Return ONLY valid JSON."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=GROQ_TEMPERATURE,
+            temperature=GROQ_TEMPERATURE
         )
 
         raw_text = response.choices[0].message.content

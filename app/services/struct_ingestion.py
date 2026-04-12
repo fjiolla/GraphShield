@@ -1,14 +1,3 @@
-"""
-struct_ingestion.py
-Module 1: Multi-Format Data Ingestion
-Handles CSV, JSON, SQL, and XLSX files.
-Parses, validates, sanitizes, and persists data to SQLite (local_vault.db).
-
-Future Migration Note:
-  Replace SQLite write logic with BigQuery `load_table_from_dataframe`
-  or GCS upload + BQ external table with minimal changes.
-"""
-
 import json
 import logging
 import re
@@ -31,20 +20,7 @@ from app.utils.struct_format_utils import (
 
 struct_logger = logging.getLogger("struct_ingestion")
 
-
-# ─────────────────────────────────────────────
-# SQLite Connection
-# ─────────────────────────────────────────────
 def struct_get_db_connection() -> sqlite3.Connection:
-    """
-    Open and return a SQLite connection to local_vault.db.
-    Enables WAL mode and foreign key support to simulate BigQuery robustness.
-
-    Future Migration: Replace with BigQuery client initialization.
-
-    Returns:
-        sqlite3.Connection
-    """
     Path(DATA_DIR).mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(SQLITE_DB_PATH, check_same_thread=False)
     conn.execute("PRAGMA journal_mode=WAL;")
@@ -54,35 +30,13 @@ def struct_get_db_connection() -> sqlite3.Connection:
     return conn
 
 
-# ─────────────────────────────────────────────
-# Write DataFrame → SQLite
-# ─────────────────────────────────────────────
+
 def struct_write_to_sqlite(
     df: pd.DataFrame,
     table_name: str,
     conn: Optional[sqlite3.Connection] = None,
     if_exists: str = "replace",
 ) -> str:
-    """
-    Write a pandas DataFrame to a SQLite table.
-
-    Args:
-        df: DataFrame to write.
-        table_name: Target SQLite table name.
-        conn: Optional existing connection. Opens a new one if None.
-        if_exists: 'replace' | 'append' | 'fail' (passed to pandas).
-
-    Returns:
-        Canonical table name used for writing.
-
-    Raises:
-        ValueError: If the DataFrame is empty.
-        RuntimeError: On SQLite write failure.
-
-    Future Migration:
-        Replace with:
-            bq_client.load_table_from_dataframe(df, f"{DATASET}.{table_name}")
-    """
     if df is None or df.empty:
         raise ValueError("Cannot write an empty DataFrame to SQLite.")
 
@@ -105,23 +59,7 @@ def struct_write_to_sqlite(
             _conn.close()
 
 
-# ─────────────────────────────────────────────
-# Format Handlers
-# ─────────────────────────────────────────────
 def struct_ingest_csv(file_path: Path) -> pd.DataFrame:
-    """
-    Parse a CSV file into a sanitized DataFrame.
-    Auto-detects encoding via chardet.
-
-    Args:
-        file_path: Path to the CSV file.
-
-    Returns:
-        pandas DataFrame.
-
-    Raises:
-        ValueError: If the CSV cannot be parsed or is empty.
-    """
     encoding = struct_detect_encoding(file_path)
     try:
         df = pd.read_csv(
@@ -143,19 +81,6 @@ def struct_ingest_csv(file_path: Path) -> pd.DataFrame:
 
 
 def struct_ingest_json(file_path: Path) -> pd.DataFrame:
-    """
-    Parse a JSON file into a sanitized DataFrame.
-    Recursively flattens nested structures using dot-notation.
-
-    Args:
-        file_path: Path to the JSON file.
-
-    Returns:
-        pandas DataFrame.
-
-    Raises:
-        ValueError: If the JSON is invalid or unparseable.
-    """
     encoding = struct_detect_encoding(file_path)
     try:
         with open(file_path, encoding=encoding) as fh:
@@ -174,22 +99,6 @@ def struct_ingest_json(file_path: Path) -> pd.DataFrame:
 
 
 def struct_ingest_sql(file_path: Path, conn: Optional[sqlite3.Connection] = None) -> pd.DataFrame:
-    """
-    Execute a SQL script (DDL/DML) against the local SQLite database.
-    For SELECT statements, returns the result as a DataFrame.
-    For DDL/DML, returns an empty confirmation DataFrame.
-
-    Args:
-        file_path: Path to the .sql file.
-        conn: Optional existing connection.
-
-    Returns:
-        pandas DataFrame (query results or empty frame for DML/DDL).
-
-    Raises:
-        ValueError: If the SQL file is empty.
-        RuntimeError: On SQL execution failure.
-    """
     encoding = struct_detect_encoding(file_path)
     with open(file_path, encoding=encoding) as fh:
         sql_text = fh.read().strip()
@@ -227,19 +136,6 @@ def struct_ingest_sql(file_path: Path, conn: Optional[sqlite3.Connection] = None
 
 
 def struct_ingest_xlsx(file_path: Path) -> pd.DataFrame:
-    """
-    Parse an Excel (.xlsx) file into a sanitized DataFrame.
-    Handles merged cells, auto-detected headers, and Excel serial dates.
-
-    Args:
-        file_path: Path to the .xlsx file.
-
-    Returns:
-        pandas DataFrame.
-
-    Raises:
-        ValueError: If the file is not valid Excel or is empty.
-    """
     df = struct_xlsx_to_dataframe(file_path)
 
     if df.empty:
@@ -250,9 +146,7 @@ def struct_ingest_xlsx(file_path: Path) -> pd.DataFrame:
     return df
 
 
-# ─────────────────────────────────────────────
-# Primary Ingestion Entrypoint
-# ─────────────────────────────────────────────
+
 class StructIngestionResult:
     """Container for the result of a struct_ingest_file call."""
 
@@ -295,25 +189,7 @@ def struct_ingest_file(
     table_name: Optional[str] = None,
     conn: Optional[sqlite3.Connection] = None,
 ) -> StructIngestionResult:
-    """
-    Primary ingestion entrypoint.
-    Detects file format via MIME type and routes to the appropriate handler.
-    Stores parsed data into SQLite (local_vault.db).
-
-    Args:
-        file_path: Path to the uploaded file.
-        table_name: Optional override for the SQLite table name.
-                    Defaults to the sanitized filename stem.
-        conn: Optional shared SQLite connection.
-
-    Returns:
-        StructIngestionResult with metadata about the ingested data.
-
-    Raises:
-        FileNotFoundError: If the file does not exist.
-        ValueError: If the file format is unsupported or data is empty.
-        RuntimeError: On ingestion or write failure.
-    """
+   
     file_path = Path(file_path)
     if not file_path.exists():
         raise FileNotFoundError(f"File not found: {file_path}")
@@ -374,19 +250,7 @@ def struct_ingest_file(
     )
 
 
-# ─────────────────────────────────────────────
-# Utility: List tables in local_vault.db
-# ─────────────────────────────────────────────
 def struct_list_tables(conn: Optional[sqlite3.Connection] = None) -> list[str]:
-    """
-    Return a list of all user tables in the local SQLite database.
-
-    Args:
-        conn: Optional connection.
-
-    Returns:
-        List of table name strings.
-    """
     _conn = conn or struct_get_db_connection()
     close_after = conn is None
     try:
@@ -402,16 +266,7 @@ def struct_list_tables(conn: Optional[sqlite3.Connection] = None) -> list[str]:
 def struct_get_table_schema(
     table_name: str, conn: Optional[sqlite3.Connection] = None
 ) -> list[dict]:
-    """
-    Return column schema for a SQLite table.
 
-    Args:
-        table_name: Table to inspect.
-        conn: Optional connection.
-
-    Returns:
-        List of dicts with keys: cid, name, type, notnull, dflt_value, pk.
-    """
     _conn = conn or struct_get_db_connection()
     close_after = conn is None
     try:

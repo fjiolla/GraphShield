@@ -1,9 +1,3 @@
-"""
-struct_format_utils.py
-Utility functions for file format detection, nested JSON flattening,
-Excel date normalization, merged-cell forward-filling, and header detection.
-"""
-
 import io
 import logging
 import re

@@ -1,18 +1,3 @@
-"""
-struct_statistics.py
-Module 3: Local Statistical Auditing
-Computes fairness metrics on the FULL dataset using SQL queries on SQLite.
-Metrics computed:
-  - Disparate Impact Ratio (DIR)
-  - Statistical Parity Difference (SPD)
-  - Group-level outcome rates
-  - Null/missing rate per sensitive column
-
-Future Migration Note:
-  All SQL queries use ANSI-compatible syntax and can run on BigQuery
-  with table reference substitution only.
-"""
-
 import logging
 import sqlite3
 from typing import Optional
@@ -22,7 +7,6 @@ import pandas as pd
 from app.services.struct_ingestion import struct_get_db_connection
 from app.services.struct_intelligence import (
     struct_extract_columns_by_type,
-    struct_get_sensitive_and_proxy_columns,
 )
 
 struct_logger = logging.getLogger("struct_statistics")
@@ -440,13 +424,31 @@ def struct_run_fairness_audit(
                             "statistical_parity_difference": spd_info.get("spd"),
                             "threshold_violated": f"|SPD| > {STRUCT_SPD_THRESHOLD}",
                         })
-
+            dir_pairs = dir_result.get("pairs", {})
+            spd_pairs = spd_result.get("pairs", {})
+            worst_dir = min(
+                (v["dir"] for v in dir_pairs.values() if v.get("dir") is not None),
+                default=None,
+            )   
+            worst_spd = max(
+                (abs(v["spd"]) for v in spd_pairs.values() if v.get("spd") is not None),
+                default=None,
+            )
             fairness_metrics[target_col][sensitive_col] = {
                 "column_type": col_type,
                 "positive_outcome": str(positive_outcome),
                 "group_rates": group_rates,
                 "disparate_impact": dir_result,
                 "statistical_parity": spd_result,
+                "summary": {
+                    "worst_dir": worst_dir,
+                    "worst_spd": worst_spd,
+                    "any_flagged": any(v.get("flagged") for v in dir_pairs.values()),
+                    "flagged_groups": [g for g, v in dir_pairs.items() if v.get("flagged")],
+                    "privileged_group": dir_result.get("privileged_group"),
+                    "privileged_rate": dir_result.get("privileged_rate"),
+                    "total_groups": len(group_rates),
+                },
             }
 
     result = {
