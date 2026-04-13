@@ -1,6 +1,7 @@
 import os
 import time
 import shutil
+from typing import Optional
 from fastapi import APIRouter, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
 from app.core.struct_local_config import DATA_DIR
@@ -43,6 +44,7 @@ async def run_audit():
             os.remove(file_path)
         return {
             "status": "success",
+            "table_audited": table,
             "bias_detected": report.get("bias_detected"),
             "risk_level": report.get("risk_level")
         }
