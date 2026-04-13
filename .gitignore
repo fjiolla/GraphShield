@@ -3,3 +3,4 @@ __pycache__
 .env
 venv
 __pycache__/
+biased_hiring_model.pt
