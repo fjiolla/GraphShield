@@ -455,9 +455,9 @@ class StructModelAuditService:
                 protected_col=protected_col,
             )
 
-            # Smoke test with 3 rows
+            # Smoke test with 3 rows — only drop target, keep protected_col
             test_X = dataset.head(3).drop(
-                columns=[target_col, protected_col], errors="ignore"
+                columns=[target_col], errors="ignore"
             )
             smoke_preds = adapter.predict(test_X)
             struct_logger.info(
@@ -641,7 +641,9 @@ class StructModelAuditService:
             le = LabelEncoder()
             y_true = le.fit_transform(y_true.astype(str))
 
-        X = dataset.drop(columns=[target_col, protected_col], errors="ignore")
+        # Drop ONLY the target column from features
+        # Keep protected_col in X because model was trained with it
+        X = dataset.drop(columns=[target_col])
 
         # Encode categorical features for prediction
         for col in X.select_dtypes(include=["object", "category"]).columns:

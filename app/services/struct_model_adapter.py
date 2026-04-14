@@ -65,6 +65,8 @@ class StructModelAdapter:
         self.target_col = target_col
         self.protected_col = protected_col
         self.model = None
+        self.encoders = {}
+        self.feature_order = None
 
         # Detect or override model type
         if model_type:
@@ -148,66 +150,35 @@ class StructModelAdapter:
         """
         Load sklearn model from .pkl or .joblib file.
         
-        Handles version mismatches by trying multiple strategies:
-          1. Direct pickle/joblib load
-          2. Joblib load with compatibility mode (for sklearn version mismatch)
-          3. Pickle load with encoding='latin1' (for Python 2/3 compat)
+        Handles two pickle formats:
+          1. Plain sklearn model object → use directly
+          2. Bundle dict {"model": ..., "encoders": ..., "feature_order": ...}
+             → extract model, store encoders and feature_order
+        
+        Also handles version mismatches with multiple loading strategies.
         
         Raises:
             ValueError: If all loading strategies fail.
         """
-        import warnings
-        ext = os.path.splitext(self.model_path.lower())[1]
+        with open(self.model_path, "rb") as f:
+            loaded = pickle.load(f)
 
-        strategies = []
-
-        if ext == ".joblib":
-            strategies.append(("joblib_direct", self._try_joblib_load))
-            strategies.append(("pickle_direct", self._try_pickle_load))
+        # Handle both plain model AND bundle dict
+        if isinstance(loaded, dict) and "model" in loaded:
+            self.encoders = loaded.get("encoders", {})
+            self.feature_order = loaded.get("feature_order", None)
+            self.model = loaded["model"]
+            struct_logger.info(
+                "sklearn bundle dict loaded from '%s' (encoders=%d, feature_order=%s).",
+                self.model_path,
+                len(self.encoders),
+                self.feature_order is not None,
+            )
         else:
-            strategies.append(("pickle_direct", self._try_pickle_load))
-            strategies.append(("joblib_direct", self._try_joblib_load))
-
-        # Also try pickle with latin1 encoding (Python 2 → 3 compat)
-        strategies.append(("pickle_latin1", self._try_pickle_load_latin1))
-
-        errors = []
-        for name, loader in strategies:
-            try:
-                with warnings.catch_warnings():
-                    warnings.simplefilter("ignore")
-                    self.model = loader()
-                struct_logger.info(
-                    "sklearn model loaded via '%s' from '%s'.", name, self.model_path
-                )
-                return
-            except Exception as e:
-                errors.append(f"{name}: {str(e)[:200]}")
-                struct_logger.debug("sklearn load strategy '%s' failed: %s", name, str(e)[:200])
-
-        # All strategies failed
-        error_summary = "; ".join(errors)
-        raise ValueError(
-            f"Failed to load sklearn model from '{self.model_path}'. "
-            f"This is likely due to a scikit-learn version mismatch — "
-            f"the model was trained with a different sklearn version than "
-            f"the one installed. Tried: {error_summary}"
-        )
-
-    def _try_pickle_load(self):
-        """Try standard pickle load."""
-        with open(self.model_path, "rb") as f:
-            return pickle.load(f)
-
-    def _try_joblib_load(self):
-        """Try joblib load."""
-        import joblib
-        return joblib.load(self.model_path)
-
-    def _try_pickle_load_latin1(self):
-        """Try pickle load with latin1 encoding (Python 2/3 compat)."""
-        with open(self.model_path, "rb") as f:
-            return pickle.load(f, encoding="latin1")
+            self.encoders = {}
+            self.feature_order = None
+            self.model = loaded
+            struct_logger.info("sklearn plain model loaded from '%s'.", self.model_path)
 
     def _load_tensorflow(self):
         """Load TensorFlow/Keras model — lazy import."""
@@ -245,13 +216,12 @@ class StructModelAdapter:
         Raises:
             ValueError: If prediction fails.
         """
-        # Strip target and protected columns if present
+        # Strip only target column if present — keep protected_col
+        # because the model was trained with it as a feature
         X_clean = X.copy()
         cols_to_drop = []
         if self.target_col and self.target_col in X_clean.columns:
             cols_to_drop.append(self.target_col)
-        if self.protected_col and self.protected_col in X_clean.columns:
-            cols_to_drop.append(self.protected_col)
         if cols_to_drop:
             X_clean = X_clean.drop(columns=cols_to_drop, errors="ignore")
             struct_logger.debug("Stripped columns from input: %s", cols_to_drop)
@@ -273,9 +243,40 @@ class StructModelAdapter:
             raise ValueError(f"Prediction failed ({self.model_type}): {str(e)}") from e
 
     def _predict_sklearn(self, X: pd.DataFrame) -> List[int]:
-        """Predict using sklearn model."""
-        preds = self.model.predict(X.values)
-        return [int(p) for p in preds]
+        """Predict using sklearn model with optional encoder + feature reorder."""
+        if isinstance(X, pd.DataFrame):
+            X = X.copy()
+        else:
+            X = pd.DataFrame(X)
+
+        # Step 1: Apply encoders ONLY to non-numeric columns
+        # Uses is_numeric_dtype to correctly handle all string variants
+        if hasattr(self, "encoders") and self.encoders:
+            for col, encoder in self.encoders.items():
+                if col in X.columns:
+                    try:
+                        # Always attempt transform on any non-numeric column
+                        if not pd.api.types.is_numeric_dtype(X[col]):
+                            X[col] = encoder.transform(
+                                X[col].astype(str)
+                            )
+                    except Exception:
+                        pass  # already numeric, skip silently
+
+        # Step 2: Reorder columns to match training feature order
+        # This also naturally excludes target_col and any extra columns
+        if hasattr(self, "feature_order") and self.feature_order:
+            cols = [c for c in self.feature_order if c in X.columns]
+            X = X[cols]
+
+        # Step 3: Final check — drop any remaining string columns
+        # that could not be encoded (defensive)
+        for col in X.columns:
+            if X[col].dtype == object:
+                X = X.drop(columns=[col])
+
+        # Step 4: Predict
+        return self.model.predict(X.values).tolist()
 
     def _predict_tensorflow(self, X: pd.DataFrame) -> List[int]:
         """Predict using TensorFlow/Keras model with 0.5 threshold."""
