@@ -1,0 +1,133 @@
+{
+  "run_id": "b7ce9a82-0841-4bbd-99c3-515113b02150",
+  "timestamp": "2026-04-14T09:44:08.454107Z",
+  "input_metadata": {
+    "file": "C:\\Users\\panda\\AppData\\Local\\Temp\\tmp216thrye.gml",
+    "format": "gml"
+  },
+  "scorecard": {
+    "timestamp": "2026-04-14T09:44:06.278922Z",
+    "graph_metadata": {
+      "node_count": 100,
+      "edge_count": 195,
+      "is_directed": false
+    },
+    "protected_attribute": "gender",
+    "groups_found": [
+      "Male",
+      "Female"
+    ],
+    "universal_metrics": {
+      "demographic_parity": {
+        "raw_value": 0.336735,
+        "score": 33,
+        "status": "FAIL"
+      },
+      "equalized_odds": {
+        "raw_value": 0.590698,
+        "score": 41,
+        "status": "FAIL"
+      },
+      "disparate_impact": {
+        "raw_value": 0.336735,
+        "score": 33,
+        "status": "FAIL"
+      },
+      "predictive_parity": {
+        "raw_value": 0.65508,
+        "score": 65,
+        "status": "WARN"
+      },
+      "per_group_metrics": {
+        "Male": {
+          "count": 60,
+          "positive_rate": 0.8167,
+          "accuracy": 0.6,
+          "tpr": 0.7907,
+          "fpr": 0.8824
+        },
+        "Female": {
+          "count": 40,
+          "positive_rate": 0.275,
+          "accuracy": 0.35,
+          "tpr": 0.2,
+          "fpr": 0.4
+        }
+      }
+    },
+    "structural_metrics": {
+      "degree_disparity": {
+        "raw_value": 2.32183908045977,
+        "score": 74,
+        "status": "FAIL",
+        "per_group": {
+          "Male": 5.05,
+          "Female": 2.175
+        }
+      },
+      "pagerank_disparity": {
+        "raw_value": 1.4564338562257537,
+        "score": 91,
+        "status": "PASS",
+        "per_group": {
+          "Male": 0.011433230476856012,
+          "Female": 0.007850154284715976
+        }
+      },
+      "clustering_disparity": {
+        "raw_value": 1.0,
+        "score": 100,
+        "status": "PASS",
+        "per_group": {
+          "Male": 0.03584656084656084,
+          "Female": 0.0
+        }
+      },
+      "homophily_coefficient": {
+        "raw_value": 0.7780812564015024,
+        "score": 23,
+        "status": "FAIL"
+      },
+      "prediction_centrality_correlation": {
+        "raw_value": 0.20043702660651633,
+        "score": 90,
+        "status": "PASS"
+      }
+    },
+    "global_explanation": {
+      "top_bias_drivers": [
+        {
+          "factor": "degree",
+          "description": "Degree disparity 2.32x: 'Male' avg degree 5.05 vs 'Female' avg degree 2.17 across gender groups.",
+          "severity": "high"
+        },
+        {
+          "factor": "homophily",
+          "description": "Homophily coefficient of 0.7781 detected \u2014 graph is highly segregated by gender, limiting cross-group connections.",
+          "severity": "high"
+        }
+      ],
+      "summary": "Analysis found 2 out of 5 structural metrics failing fairness thresholds. Key bias drivers: degree, homophily."
+    },
+    "overall_score": 56,
+    "overall_status": "FAIL",
+    "key_findings": [
+      "Demographic Parity FAIL (score 33): 'Male' receives positive outcomes at rate 81.67% vs 'Female' at 27.50% (2.97x disparity).",
+      "Equalized Odds FAIL (score 41): Difference of 0.5907 detected across groups, exceeding the 0.1 threshold.",
+      "Degree Disparity FAIL (ratio 2.32x): 'Male' avg degree 5.05 vs 'Female' avg degree 2.17 \u2014 under-connected group has fewer opportunities.",
+      "Homophily FAIL (coefficient 0.7781): Graph is highly segregated \u2014 groups are locked into isolated echo chambers with limited cross-group connections."
+    ],
+    "top_risk_groups": [
+      "Female"
+    ]
+  },
+  "gemini_report": {
+    "summary": "The hiring and candidate network graph audit failed with an overall score of 56/100. Demographic parity and equalized odds were found to be failing, indicating significant disparities between male and female groups. The graph also exhibited degree disparity and homophily.",
+    "bias_found": "Demographic parity and equalized odds biases exist, affecting male and female groups. Male receives positive outcomes at a significantly higher rate than female, and there is a notable difference in the probability of positive outcomes across groups.",
+    "likely_causes": "The bias is likely caused by a combination of structural and data causes, including the graph's homophily and degree disparity, which may be perpetuated by the model's reliance on these features.",
+    "remediation": "Implement a more diverse and representative training dataset, adjust the model's features to reduce homophily, and introduce random connections between groups to increase degree disparity. Additionally, consider incorporating fairness constraints into the model's optimization objective.",
+    "severity_assessment": "MEDIUM",
+    "regulatory_note": "The audit results may be relevant to regulations such as the US Equal Employment Opportunity Commission's (EEOC) guidelines on employment testing and the European Union's General Data Protection Regulation (GDPR) on fairness in AI decision-making."
+  },
+  "pipeline_version": "1.0.0-20260414"
+}

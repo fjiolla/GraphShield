@@ -1,0 +1,131 @@
+{
+  "run_id": "5f6a8fc2-5ba1-4886-9035-730af3a77ae4",
+  "timestamp": "2026-04-14T09:46:06.674975Z",
+  "input_metadata": {
+    "file": "C:\\Users\\panda\\AppData\\Local\\Temp\\tmpxkq0j7f6.jsonld",
+    "format": "jsonld"
+  },
+  "scorecard": {
+    "timestamp": "2026-04-14T09:46:04.361792Z",
+    "graph_metadata": {
+      "node_count": 70,
+      "edge_count": 116,
+      "is_directed": false
+    },
+    "protected_attribute": "gender",
+    "groups_found": [
+      "Male",
+      "Female"
+    ],
+    "universal_metrics": {
+      "demographic_parity": {
+        "raw_value": 0.533333,
+        "score": 53,
+        "status": "FAIL"
+      },
+      "equalized_odds": {
+        "raw_value": 0.40081,
+        "score": 60,
+        "status": "WARN"
+      },
+      "disparate_impact": {
+        "raw_value": 0.533333,
+        "score": 53,
+        "status": "FAIL"
+      },
+      "predictive_parity": {
+        "raw_value": 0.875,
+        "score": 100,
+        "status": "PASS"
+      },
+      "per_group_metrics": {
+        "Male": {
+          "count": 40,
+          "positive_rate": 0.75,
+          "accuracy": 0.6,
+          "tpr": 0.7692,
+          "fpr": 0.7143
+        },
+        "Female": {
+          "count": 30,
+          "positive_rate": 0.4,
+          "accuracy": 0.4333,
+          "tpr": 0.3684,
+          "fpr": 0.4545
+        }
+      }
+    },
+    "structural_metrics": {
+      "degree_disparity": {
+        "raw_value": 1.4807692307692308,
+        "score": 91,
+        "status": "PASS",
+        "per_group": {
+          "Male": 3.85,
+          "Female": 2.6
+        }
+      },
+      "pagerank_disparity": {
+        "raw_value": 1.1633119134211845,
+        "score": 97,
+        "status": "PASS",
+        "per_group": {
+          "Male": 0.015200238722983112,
+          "Female": 0.013066348369355838
+        }
+      },
+      "clustering_disparity": {
+        "raw_value": 1.7625,
+        "score": 85,
+        "status": "FAIL",
+        "per_group": {
+          "Male": 0.03916666666666666,
+          "Female": 0.02222222222222222
+        }
+      },
+      "homophily_coefficient": {
+        "raw_value": 0.8841158841158842,
+        "score": 12,
+        "status": "FAIL"
+      },
+      "prediction_centrality_correlation": {
+        "raw_value": 0.17438835983531534,
+        "score": 92,
+        "status": "PASS"
+      }
+    },
+    "global_explanation": {
+      "top_bias_drivers": [
+        {
+          "factor": "homophily",
+          "description": "Homophily coefficient of 0.8841 detected \u2014 graph is highly segregated by gender, limiting cross-group connections.",
+          "severity": "high"
+        },
+        {
+          "factor": "clustering",
+          "description": "Clustering disparity 1.76x: 'Male' avg clustering 0.0392 vs 'Female' avg clustering 0.0222.",
+          "severity": "medium"
+        }
+      ],
+      "summary": "Analysis found 2 out of 5 structural metrics failing fairness thresholds. Key bias drivers: homophily, clustering."
+    },
+    "overall_score": 70,
+    "overall_status": "WARN",
+    "key_findings": [
+      "Demographic Parity FAIL (score 53): 'Male' receives positive outcomes at rate 75.00% vs 'Female' at 40.00% (1.88x disparity).",
+      "Homophily FAIL (coefficient 0.8841): Graph is highly segregated \u2014 groups are locked into isolated echo chambers with limited cross-group connections."
+    ],
+    "top_risk_groups": [
+      "Female"
+    ]
+  },
+  "gemini_report": {
+    "summary": "The audit found a Demographic Parity failure and Homophily failure in the semantic knowledge graph, indicating unequal treatment of 'Male' and 'Female' groups.",
+    "bias_found": "Demographic Parity failure: 'Male' receives positive outcomes at a 1.88x higher rate than 'Female', and Homophily failure: the graph is highly segregated with limited cross-group connections.",
+    "likely_causes": "Structural causes: biased data representation, Model causes: inadequate training data or biased model architecture, Data causes: incomplete or inaccurate data.",
+    "remediation": "1. Collect and analyze more diverse data to improve model training. 2. Implement fairness constraints during model training to prevent biased outcomes. 3. Regularly audit the model for bias and update as necessary. 4. Consider using debiasing techniques to remove existing bias from the model.",
+    "severity_assessment": "MEDIUM",
+    "regulatory_note": "The audit results may be relevant to regulations such as the European Union's General Data Protection Regulation (GDPR) and the US Equal Credit Opportunity Act (ECOA)"
+  },
+  "pipeline_version": "1.0.0-20260414"
+}

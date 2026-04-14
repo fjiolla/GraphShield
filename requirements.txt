@@ -15,3 +15,5 @@ sentence-transformers
 chardet
 python-magic
 openpyxl
+python-louvain
+fairlearn
