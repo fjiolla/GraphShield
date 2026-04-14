@@ -4,3 +4,7 @@ __pycache__
 venv
 __pycache__/
 biased_hiring_model.pt
+node_modules/
+dist/
+build/
+*.egg-info/

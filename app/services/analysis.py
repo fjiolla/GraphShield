@@ -1,4 +1,3 @@
-import spacy
 from groq import Groq
 from app.core.config import settings
 import re
@@ -8,6 +7,7 @@ nlp = None
 def get_nlp():
     global nlp
     if nlp is None:
+        import spacy
         nlp = spacy.load("en_core_web_sm")  
     return nlp
 

@@ -16,5 +16,3 @@ chardet
 python-magic
 openpyxl
 captum
-torch 
-transformers
