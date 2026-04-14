@@ -217,6 +217,9 @@ class StructExplainabilityEngine:
           4. DATA vs MODEL — comparison with Module 1 data bias
           5. REMEDIATION — two actionable steps
         
+        Includes 3 retries with exponential backoff for transient network failures.
+        Falls back to a locally-generated narrative if the API is unreachable.
+        
         Args:
             bias_report: Full computed bias metrics dict.
             shap_features: Top SHAP feature importances list.
@@ -227,11 +230,14 @@ class StructExplainabilityEngine:
         
         Returns:
             String narrative (max ~250 words).
-            On failure: returns error message string.
+            On failure: returns locally-generated fallback narrative.
         """
         groq_api_key = os.getenv("GROQ_API_KEY")
         if not groq_api_key:
-            return "AI narrative unavailable: GROQ_API_KEY not set in environment."
+            struct_logger.warning("GROQ_API_KEY not set — generating local fallback narrative.")
+            return self._generate_local_narrative(
+                bias_report, shap_features, protected_col, target_col, verdict, module1_report
+            )
 
         try:
             # Build Module 1 summary if available
@@ -289,28 +295,204 @@ class StructExplainabilityEngine:
                 "temperature": 0.3,
             }
 
-            struct_logger.info("Sending audit data to GROQ for narrative generation...")
+            # Retry with exponential backoff (3 attempts)
+            import time
+            max_retries = 3
+            last_error = None
 
-            response = requests.post(
-                "https://api.groq.com/openai/v1/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {groq_api_key}",
-                    "Content-Type": "application/json",
-                },
-                json=payload,
-                timeout=30,
+            for attempt in range(1, max_retries + 1):
+                try:
+                    struct_logger.info(
+                        "GROQ API attempt %d/%d...", attempt, max_retries
+                    )
+                    response = requests.post(
+                        "https://api.groq.com/openai/v1/chat/completions",
+                        headers={
+                            "Authorization": f"Bearer {groq_api_key}",
+                            "Content-Type": "application/json",
+                        },
+                        json=payload,
+                        timeout=30,
+                    )
+                    response.raise_for_status()
+
+                    result = response.json()
+                    narrative = result["choices"][0]["message"]["content"]
+
+                    struct_logger.info(
+                        "GROQ narrative generated successfully on attempt %d (%d chars).",
+                        attempt, len(narrative),
+                    )
+                    return narrative
+
+                except (requests.exceptions.ConnectionError,
+                        requests.exceptions.Timeout,
+                        requests.exceptions.DNSError if hasattr(requests.exceptions, 'DNSError') else ConnectionError) as e:
+                    last_error = e
+                    if attempt < max_retries:
+                        wait_time = 2 ** attempt  # 2s, 4s
+                        struct_logger.warning(
+                            "GROQ API attempt %d failed (network): %s. "
+                            "Retrying in %ds...",
+                            attempt, str(e)[:100], wait_time,
+                        )
+                        time.sleep(wait_time)
+                    else:
+                        struct_logger.error(
+                            "GROQ API failed after %d attempts: %s",
+                            max_retries, str(e)[:200],
+                        )
+
+                except Exception as e:
+                    last_error = e
+                    struct_logger.error(
+                        "GROQ API non-retryable error on attempt %d: %s",
+                        attempt, str(e),
+                    )
+                    break  # Don't retry on non-network errors (e.g., 401, 400)
+
+            # All retries failed — generate local fallback
+            struct_logger.warning(
+                "GROQ API unreachable after %d attempts. "
+                "Generating local fallback narrative.",
+                max_retries,
             )
-            response.raise_for_status()
-
-            result = response.json()
-            narrative = result["choices"][0]["message"]["content"]
-
-            struct_logger.info("GROQ narrative generated successfully (%d chars).", len(narrative))
-            return narrative
+            return self._generate_local_narrative(
+                bias_report, shap_features, protected_col, target_col,
+                verdict, module1_report
+            )
 
         except Exception as e:
             struct_logger.error("GROQ narrative generation failed: %s", str(e))
-            return f"AI narrative unavailable: {str(e)}"
+            return self._generate_local_narrative(
+                bias_report, shap_features, protected_col, target_col,
+                verdict, module1_report
+            )
+
+    def _generate_local_narrative(
+        self,
+        bias_report: dict,
+        shap_features: list,
+        protected_col: str,
+        target_col: str,
+        verdict: dict,
+        module1_report: Optional[dict] = None,
+    ) -> str:
+        """
+        Generate a structured compliance narrative locally when GROQ API
+        is unavailable. Produces the same 5-section report format.
+        
+        Args:
+            bias_report: Full computed bias metrics dict.
+            shap_features: Top SHAP feature importances list.
+            protected_col: Protected attribute column name.
+            target_col: Target variable column name.
+            verdict: Bias verdict dict.
+            module1_report: Optional Module 1 report for cross-referencing.
+        
+        Returns:
+            String narrative with 5 structured sections.
+        """
+        bias_verdict = verdict.get("bias_verdict", "Unknown")
+        confidence = verdict.get("bias_confidence", "Unknown")
+        reason = verdict.get("verdict_reason", "N/A")
+        worst_group = verdict.get("worst_group", "Unknown")
+        worst_dir = verdict.get("worst_disparate_impact_ratio", "N/A")
+
+        # Extract disparate impact details
+        di_data = bias_report.get("disparate_impact", {})
+        privileged_group = di_data.get("privileged_group", "Unknown")
+        parity_gap = bias_report.get("parity_gap", 0)
+
+        # Top SHAP features
+        top_2_features = shap_features[:2] if shap_features else []
+        shap_summary = ", ".join(
+            [f"'{f['feature']}' (importance: {f['mean_shap']:.4f})" for f in top_2_features]
+        ) if top_2_features else "No SHAP features available"
+
+        # Module 1 comparison
+        if module1_report:
+            m1_bias = module1_report.get("bias_detected", "Unknown")
+            m1_risk = module1_report.get("risk_level", "Unknown")
+            data_vs_model = (
+                f"Module 1 detected data bias: {m1_bias} (risk: {m1_risk}). "
+                f"The model's {bias_verdict.lower()} verdict suggests that "
+                f"{'the model may be amplifying pre-existing data biases' if bias_verdict == 'BIASED' else 'the model handles the data biases reasonably'}."
+            )
+        else:
+            data_vs_model = (
+                "Module 1 data bias report is not available for comparison. "
+                "It is recommended to run Module 1 first to understand whether "
+                "model bias originates from the training data or the model itself."
+            )
+
+        # Build narrative
+        sections = []
+
+        # Section 1: VERDICT
+        sections.append(
+            f"1. VERDICT: This model is {bias_verdict} with {confidence} confidence. {reason}"
+        )
+
+        # Section 2: IMPACT
+        if bias_verdict == "BIASED":
+            sections.append(
+                f"2. IMPACT: The group '{worst_group}' is most disadvantaged with a "
+                f"disparate impact ratio of {worst_dir} compared to the privileged "
+                f"group '{privileged_group}'. The parity gap of {parity_gap:.4f} indicates "
+                f"a significant disparity in positive outcome rates between groups."
+            )
+        elif bias_verdict == "MARGINAL":
+            sections.append(
+                f"2. IMPACT: The group '{worst_group}' shows marginally lower "
+                f"outcomes with a disparate impact ratio of {worst_dir}. "
+                f"While not violating the 80% rule, the disparity warrants monitoring."
+            )
+        else:
+            sections.append(
+                f"2. IMPACT: No significant disadvantaged group identified. "
+                f"All groups show comparable outcome rates with a parity gap of {parity_gap:.4f}."
+            )
+
+        # Section 3: ROOT CAUSE
+        sections.append(
+            f"3. ROOT CAUSE: The top features driving model decisions are: {shap_summary}. "
+            f"These features should be reviewed for potential proxy discrimination "
+            f"with the protected attribute '{protected_col}'."
+        )
+
+        # Section 4: DATA vs MODEL
+        sections.append(f"4. DATA vs MODEL: {data_vs_model}")
+
+        # Section 5: REMEDIATION
+        if bias_verdict == "BIASED":
+            sections.append(
+                f"5. REMEDIATION: (a) Audit the training data for representation "
+                f"imbalance in the '{protected_col}' attribute and apply reweighting "
+                f"or resampling techniques to balance group representation. "
+                f"(b) Review and potentially remove features that serve as proxies "
+                f"for '{protected_col}', particularly the top SHAP features that "
+                f"may encode protected characteristics indirectly."
+            )
+        elif bias_verdict == "MARGINAL":
+            sections.append(
+                f"5. REMEDIATION: (a) Implement continuous monitoring of disparate "
+                f"impact ratios with alerts when they drop below 0.8. "
+                f"(b) Consider calibration techniques to ensure prediction "
+                f"probabilities are well-calibrated across groups."
+            )
+        else:
+            sections.append(
+                f"5. REMEDIATION: (a) Schedule regular annual bias audits to "
+                f"ensure fairness metrics remain within acceptable bounds. "
+                f"(b) Monitor for data drift that could introduce bias over time."
+            )
+
+        narrative = "\n\n".join(sections)
+        struct_logger.info(
+            "Local fallback narrative generated (%d chars).", len(narrative)
+        )
+        return narrative
 
 
 def _safe_value(v):
@@ -324,3 +506,4 @@ def _safe_value(v):
     if pd.isna(v):
         return None
     return v
+

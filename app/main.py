@@ -3,13 +3,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.api.v1.api import api_router
 import logging 
+from dotenv import load_dotenv
 
-app = FastAPI(
-    title=settings.PROJECT_NAME,
-    version="1.0.0",
-    openapi_url=f"/api/v1/openapi.json"
-)
+load_dotenv()
 
+app = FastAPI(title=settings.PROJECT_NAME)
 
 app.add_middleware(
     CORSMiddleware,

@@ -145,15 +145,69 @@ class StructModelAdapter:
             ) from e
 
     def _load_sklearn(self):
-        """Load sklearn model from .pkl or .joblib file."""
+        """
+        Load sklearn model from .pkl or .joblib file.
+        
+        Handles version mismatches by trying multiple strategies:
+          1. Direct pickle/joblib load
+          2. Joblib load with compatibility mode (for sklearn version mismatch)
+          3. Pickle load with encoding='latin1' (for Python 2/3 compat)
+        
+        Raises:
+            ValueError: If all loading strategies fail.
+        """
+        import warnings
         ext = os.path.splitext(self.model_path.lower())[1]
+
+        strategies = []
+
         if ext == ".joblib":
-            import joblib
-            self.model = joblib.load(self.model_path)
+            strategies.append(("joblib_direct", self._try_joblib_load))
+            strategies.append(("pickle_direct", self._try_pickle_load))
         else:
-            with open(self.model_path, "rb") as f:
-                self.model = pickle.load(f)
-        struct_logger.info("sklearn model loaded from '%s'.", self.model_path)
+            strategies.append(("pickle_direct", self._try_pickle_load))
+            strategies.append(("joblib_direct", self._try_joblib_load))
+
+        # Also try pickle with latin1 encoding (Python 2 → 3 compat)
+        strategies.append(("pickle_latin1", self._try_pickle_load_latin1))
+
+        errors = []
+        for name, loader in strategies:
+            try:
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    self.model = loader()
+                struct_logger.info(
+                    "sklearn model loaded via '%s' from '%s'.", name, self.model_path
+                )
+                return
+            except Exception as e:
+                errors.append(f"{name}: {str(e)[:200]}")
+                struct_logger.debug("sklearn load strategy '%s' failed: %s", name, str(e)[:200])
+
+        # All strategies failed
+        error_summary = "; ".join(errors)
+        raise ValueError(
+            f"Failed to load sklearn model from '{self.model_path}'. "
+            f"This is likely due to a scikit-learn version mismatch — "
+            f"the model was trained with a different sklearn version than "
+            f"the one installed. Tried: {error_summary}"
+        )
+
+    def _try_pickle_load(self):
+        """Try standard pickle load."""
+        with open(self.model_path, "rb") as f:
+            return pickle.load(f)
+
+    def _try_joblib_load(self):
+        """Try joblib load."""
+        import joblib
+        return joblib.load(self.model_path)
+
+    def _try_pickle_load_latin1(self):
+        """Try pickle load with latin1 encoding (Python 2/3 compat)."""
+        with open(self.model_path, "rb") as f:
+            return pickle.load(f, encoding="latin1")
 
     def _load_tensorflow(self):
         """Load TensorFlow/Keras model — lazy import."""

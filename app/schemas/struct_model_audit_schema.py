@@ -84,6 +84,12 @@ class StructGovernanceOutput(BaseModel):
     pdf_export_ready: bool = Field(False, description="Whether PDF export is available")
 
 
+class StructNarrativeSection(BaseModel):
+    """Single section of the AI compliance narrative."""
+    title: str = Field(..., description="Section heading (e.g. VERDICT, IMPACT, ROOT CAUSE)")
+    content: str = Field(..., description="Section body text — plain English, no markdown")
+
+
 class StructModelAuditResponse(BaseModel):
     """
     Full response for a model bias audit run.
@@ -91,7 +97,8 @@ class StructModelAuditResponse(BaseModel):
     """
     job_id: str = Field(..., description="Unique job identifier for this audit run")
     status: str = Field(..., description="Audit status: completed / failed")
-    model_format_detected: str = Field(..., description="Detected model format (sklearn, tensorflow, etc.)")
+    model_format_detected: str = Field(..., description="Detected model format (sklearn, tensorflow, shadow_logistic_regression, etc.)")
+    original_model_error: Optional[str] = Field(None, description="Short error message if original model failed and shadow fallback was used. None if original model loaded successfully.")
     protected_column: str = Field(..., description="Protected attribute column used")
     target_column: str = Field(..., description="Target variable column used")
     total_predictions: int = Field(..., description="Total number of predictions made")
@@ -99,6 +106,6 @@ class StructModelAuditResponse(BaseModel):
     bias_metrics: dict = Field(default_factory=dict, description="Full computed bias metrics")
     shap_top_features: List[dict] = Field(default_factory=list, description="Top SHAP feature importances")
     counterfactual_example: dict = Field(default_factory=dict, description="Counterfactual analysis result")
-    ai_narrative: str = Field("", description="GROQ-generated compliance audit narrative")
+    ai_narrative: List[StructNarrativeSection] = Field(default_factory=list, description="Structured AI compliance narrative — list of titled sections for easy frontend rendering")
     governance: StructGovernanceOutput = Field(..., description="Governance output: scorecard + remediation")
     timestamp: str = Field(..., description="ISO 8601 timestamp of audit completion")

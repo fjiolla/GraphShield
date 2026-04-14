@@ -34,6 +34,7 @@ from app.schemas.struct_model_audit_schema import (
     StructFairnessScore,
     StructGovernanceOutput,
     StructModelAuditResponse,
+    StructNarrativeSection,
 )
 from app.services.struct_explainability import StructExplainabilityEngine
 from app.services.struct_model_adapter import StructModelAdapter
@@ -146,7 +147,7 @@ class StructModelAuditService:
             struct_logger.info("Step 2 complete: Columns validated.")
 
             # ── Step 3: Load model (with shadow fallback) ──
-            adapter, model_format = self._load_model_with_fallback(
+            adapter, model_format, original_model_error = self._load_model_with_fallback(
                 model_path, model_type, dataset, target_col, protected_col
             )
             struct_logger.info("Step 3 complete: Model loaded (format=%s).", model_format)
@@ -209,10 +210,19 @@ class StructModelAuditService:
             # ── Step 11: Build response ──
             timestamp = datetime.now(timezone.utc).isoformat()
 
+            # Parse narrative into structured sections for frontend
+            narrative_sections = self._parse_narrative_to_sections(narrative)
+
+            # Shorten original_model_error for clean frontend display
+            short_model_error = None
+            if original_model_error:
+                short_model_error = self._shorten_model_error(original_model_error)
+
             response = StructModelAuditResponse(
                 job_id=job_id,
                 status="completed",
                 model_format_detected=model_format,
+                original_model_error=short_model_error,
                 protected_column=protected_col,
                 target_column=target_col,
                 total_predictions=total_predictions,
@@ -220,7 +230,7 @@ class StructModelAuditService:
                 bias_metrics=metrics,
                 shap_top_features=shap_result.get("feature_importances", []),
                 counterfactual_example=counterfactual,
-                ai_narrative=narrative,
+                ai_narrative=narrative_sections,
                 governance=governance,
                 timestamp=timestamp,
             )
@@ -454,7 +464,7 @@ class StructModelAuditService:
                 "Model smoke test passed: %d predictions from %d rows.",
                 len(smoke_preds), len(test_X),
             )
-            return adapter, adapter.model_type
+            return adapter, adapter.model_type, None
 
         except Exception as e:
             struct_logger.warning(
@@ -506,18 +516,107 @@ class StructModelAuditService:
         adapter.target_col = target_col
         adapter.protected_col = protected_col
 
-        model_format = (
-            f"shadow_logistic_regression "
-            f"(original model failed: {original_error})"
-        )
+        model_format = "shadow_logistic_regression"
 
         struct_logger.info("Shadow model trained successfully.")
-        print(
-            f"⚠️  WARNING: Using shadow LogisticRegression model. "
-            f"Original model failed: {original_error}"
+        struct_logger.warning(
+            "Using shadow LogisticRegression model. "
+            "Original model failed: %s", original_error
         )
 
-        return adapter, model_format
+        return adapter, model_format, original_error
+
+    @staticmethod
+    def _parse_narrative_to_sections(narrative: str) -> list:
+        """
+        Parse a raw narrative string (from Groq or local fallback) into
+        structured sections [{title, content}] for frontend rendering.
+        
+        Handles formats like:
+          - "## 1. VERDICT\nContent..."   (Groq markdown)
+          - "1. VERDICT: Content..."      (local fallback)
+        """
+        import re
+
+        sections = []
+
+        # Split by section patterns: "## N. TITLE" or "N. TITLE:"
+        # This regex catches both Groq (## 1. VERDICT) and local (1. VERDICT:)
+        parts = re.split(r'(?:^|\n+)(?:#{1,3}\s*)?\d+\.\s*', narrative.strip())
+
+        # First element is usually empty or preamble, skip it
+        for part in parts:
+            part = part.strip()
+            if not part:
+                continue
+
+            # Split title from content at first newline or colon
+            # Handle "VERDICT\nContent" and "VERDICT: Content"
+            if '\n' in part:
+                title, content = part.split('\n', 1)
+                # Clean title of trailing colon
+                title = title.strip().rstrip(':')
+                content = content.strip()
+            elif ': ' in part:
+                title, content = part.split(': ', 1)
+                title = title.strip()
+                content = content.strip()
+            else:
+                title = part[:50].strip()
+                content = part
+
+            # Clean up any remaining markdown artifacts
+            title = title.replace('#', '').strip()
+            content = content.replace('\n', ' ').strip()
+
+            if title and content:
+                sections.append(
+                    StructNarrativeSection(title=title, content=content)
+                )
+
+        # If parsing failed (no sections found), return the whole thing as one section
+        if not sections and narrative.strip():
+            sections.append(
+                StructNarrativeSection(
+                    title="AUDIT NARRATIVE",
+                    content=narrative.replace('\n', ' ').strip(),
+                )
+            )
+
+        return sections
+
+    @staticmethod
+    def _shorten_model_error(error: str) -> str:
+        """
+        Shorten verbose model loading errors into a concise message
+        suitable for frontend display.
+        """
+        # Detect common error patterns and return clean messages
+        error_lower = error.lower()
+
+        if "incompatible dtype" in error_lower or "version mismatch" in error_lower:
+            return (
+                "scikit-learn version mismatch — the model was trained with a different "
+                "scikit-learn version. Please retrain the model with the current version "
+                "or export it as .joblib for better compatibility."
+            )
+        elif "no module named" in error_lower:
+            module = error.split("No module named")[-1].strip().strip("'\"")
+            return f"Missing required package: {module}. Please install it in your environment."
+        elif "tensorflow" in error_lower or "keras" in error_lower:
+            return "TensorFlow/Keras model loading failed. Ensure TensorFlow is installed and the model format is compatible."
+        elif "torch" in error_lower or "pytorch" in error_lower:
+            return "PyTorch model loading failed. Ensure PyTorch is installed and the model format is compatible."
+        elif "onnx" in error_lower:
+            return "ONNX model loading failed. Ensure onnxruntime is installed and the model format is valid."
+        elif "corrupt" in error_lower or "invalid" in error_lower:
+            return "Model file appears to be corrupted or invalid. Please re-export and upload again."
+        else:
+            # Generic short message — truncate to 200 chars
+            short = error[:200]
+            if len(error) > 200:
+                short += "..."
+            return short
 
     # ─────────────────────────────────────────────
     # Step 4: Prepare data
