@@ -18,9 +18,9 @@ async def ingest_document(file: UploadFile = File(...)):
             content,
             file.content_type
         )
-        print("File validation doen!!")
-        bias_results = await perform_dynamic_bias_profiling(extracted_text)
 
+        bias_results = await perform_dynamic_bias_profiling(extracted_text)
+        print(bias_results)
         if "groups" in bias_results["dynamic_profile"]:
             quantitative_audit = await verify_contextual_bias(
                 extracted_text, 
@@ -45,6 +45,7 @@ async def ingest_document(file: UploadFile = File(...)):
         }
         
     except Exception as e:
+        print("This is an error into backend!!",e)
         raise HTTPException(status_code=500, detail=str(e))
     
     

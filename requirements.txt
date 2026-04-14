@@ -17,3 +17,4 @@ python-magic
 openpyxl
 python-louvain
 fairlearn
+captum

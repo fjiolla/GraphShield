@@ -185,7 +185,7 @@ class PipelineOrchestrator:
         """Detect format and parse the file."""
         fmt = detect_format(local_path)
         if fmt == "csv" and nodes_path:
-            from src.ingestion.csv_parser import CSVParser
+            from app.src.ingestion.csv_parser import CSVParser
             parser = CSVParser(nodes_path=nodes_path)
         else:
             parser = get_parser(fmt)
