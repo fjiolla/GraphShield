@@ -12,7 +12,7 @@ struct_logger = logging.getLogger("struct_local_config")
 
 
 BASE_DIR = Path(__file__).resolve().parent
-while BASE_DIR.name != "GSC" and BASE_DIR.parent != BASE_DIR:
+while BASE_DIR.name != "bias-audit-backend" and BASE_DIR.parent != BASE_DIR:
     BASE_DIR = BASE_DIR.parent
 
 _ENV_PATH = BASE_DIR / ".env"
