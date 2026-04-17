@@ -1,0 +1,176 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ═══════════════════════════════════════════════
+   GraphShield AI — Global Styles
+   ═══════════════════════════════════════════════ */
+
+@layer base {
+  :root {
+    --color-sage-500: #4D6B44;
+    --color-sage-600: #3E5637;
+    --color-sage-700: #2F412A;
+    --color-success-500: #4D6B44;
+    --color-success-600: #3E5637;
+    --color-warning-500: #E8A87C;
+    --color-danger-500: #C0392B;
+    --color-danger-600: #A93226;
+    --color-warm-300: #D4D2CC;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    font-family: var(--font-dm-sans), system-ui, sans-serif;
+    background-color: #F5F4F0;
+    color: #1C1C1A;
+    font-size: 14px;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── Typography Scale ── */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-dm-sans), system-ui, sans-serif;
+    font-weight: 600;
+    color: #1C1C1A;
+    line-height: 1.2;
+  }
+
+  .font-display {
+    font-family: var(--font-playfair), Georgia, serif;
+    font-weight: 700;
+  }
+
+  /* ── Custom Scrollbar ── */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #D4D2CC;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #A8A6A0;
+  }
+}
+
+@layer components {
+  /* ── Card Base ── */
+  .gs-card {
+    @apply bg-surface rounded-2xl;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    transition: box-shadow 150ms ease-out;
+  }
+
+  .gs-card:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .gs-card-static {
+    @apply bg-surface rounded-2xl;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  }
+
+  /* ── Skeleton Shimmer ── */
+  .skeleton {
+    @apply relative overflow-hidden rounded-lg;
+    background: linear-gradient(90deg, #E8E6E0 25%, #F0EFEB 50%, #E8E6E0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 2s ease-in-out infinite;
+  }
+
+  /* ── Sidebar Styling ── */
+  .sidebar-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-xl text-warm-500 
+           transition-all duration-150 ease-out cursor-pointer;
+  }
+
+  .sidebar-item:hover {
+    @apply bg-warm-100 text-warm-800;
+  }
+
+  .sidebar-item-active {
+    @apply bg-sidebar-active text-sage-500 font-medium;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  }
+
+  /* ── Status Colors ── */
+  .status-pass {
+    @apply text-success-500 bg-success-50;
+  }
+
+  .status-warn {
+    @apply text-warning-700 bg-warning-50;
+  }
+
+  .status-fail {
+    @apply text-danger-500 bg-danger-50;
+  }
+
+  /* ── Score Color Utility ── */
+  .score-good {
+    color: #4D6B44;
+  }
+
+  .score-moderate {
+    color: #E8A87C;
+  }
+
+  .score-poor {
+    color: #C0392B;
+  }
+
+  /* ── Focus Ring ── */
+  .focus-ring {
+    @apply focus:outline-none focus:ring-2 focus:ring-sage-500/30 focus:ring-offset-1;
+  }
+
+  /* ── Metric Mono ── */
+  .metric-value {
+    font-family: var(--font-jetbrains), Menlo, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Page Enter Animation ── */
+  .page-enter {
+    animation: fade-in 0.3s ease-out;
+  }
+}
+
+@layer utilities {
+  /* ── No scrollbar utility ── */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  /* ── Text gradient utility ── */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-sage-500 to-sage-700;
+  }
+}

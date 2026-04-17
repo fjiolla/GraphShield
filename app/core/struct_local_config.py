@@ -11,10 +11,7 @@ logging.basicConfig(
 struct_logger = logging.getLogger("struct_local_config")
 
 
-BASE_DIR = Path(__file__).resolve().parent
-while BASE_DIR.name != "bias-audit-backend" and BASE_DIR.parent != BASE_DIR:
-    BASE_DIR = BASE_DIR.parent
-
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
 _ENV_PATH = BASE_DIR / ".env"
 load_dotenv(dotenv_path=_ENV_PATH)
 
