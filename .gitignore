@@ -8,4 +8,5 @@ node_modules/
 dist/
 build/
 *.egg-info/
-.next
+.nextdata/local_vault.db
+frontend/.next/
