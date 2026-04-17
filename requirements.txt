@@ -100,4 +100,3 @@ wasabi==1.1.3
 weasel==1.0.0
 websockets==16.0
 wrapt==2.1.2
-gradio
