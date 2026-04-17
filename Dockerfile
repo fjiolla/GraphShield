@@ -2,10 +2,15 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# Install dependencies first
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+# Copy ONLY backend code
+COPY app ./app
 
-# Expose port 8080 for Google Cloud Run
+# If you need these:
+COPY data ./data
+COPY audit_logs ./audit_logs
+
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
