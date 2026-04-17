@@ -48,21 +48,20 @@ export default function OverviewDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard 
           label="Total Audits" 
-          value="24" 
-          trend="up" 
-          trendValue="12% this week" 
+          value="0" 
+          subtext="Awaiting first audit" 
           icon={<Activity />} 
         />
         <StatCard 
           label="Avg Fairness Score" 
-          value="82.4" 
+          value="0.0" 
           subtext="Across all tracked models" 
           icon={<ShieldCheck />} 
         />
         
         <StatCard 
           label="Knowledge Vault" 
-          value="5" 
+          value="0" 
           subtext="Active SQLite datasets" 
           icon={<Table2 />} 
         />
