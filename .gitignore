@@ -10,3 +10,5 @@ build/
 *.egg-info/
 .nextdata/local_vault.db
 frontend/.next/
+data/
+*.db
