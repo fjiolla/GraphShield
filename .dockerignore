@@ -1,0 +1,9 @@
+data/
+audit_logs/
+*.log
+node_modules/
+frontend/
+.git
+__pycache__/
+venv/
+.env
