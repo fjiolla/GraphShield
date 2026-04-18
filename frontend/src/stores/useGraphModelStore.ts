@@ -10,6 +10,7 @@ interface GraphModelStore {
   
   updateFormData: (data: Partial<GraphModelAuditPayload>) => void;
   analyze: () => Promise<void>;
+  clearError: () => void;
   reset: () => void;
 }
 
@@ -40,6 +41,8 @@ export const useGraphModelStore = create<GraphModelStore>((set, get) => ({
       set({ error: (e as Error).message, isLoading: false });
     }
   },
+
+  clearError: () => set({ error: null }),
 
   reset: () => set({ 
     formData: {},

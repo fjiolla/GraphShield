@@ -31,9 +31,10 @@ function WizardContent() {
   const searchParams = useSearchParams();
   const step = parseInt(searchParams.get("step") || "1", 10);
   
-  const { formData, updateFormData, analyze, result, error, reset } = useGraphModelStore();
+  const { formData, updateFormData, analyze, result, error, reset, clearError } = useGraphModelStore();
 
   const setStep = (newStep: number) => {
+    clearError(); // clear any lingering error when navigating between steps
     router.push(`?step=${newStep}`);
   };
 
