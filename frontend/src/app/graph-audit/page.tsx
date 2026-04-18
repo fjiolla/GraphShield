@@ -160,24 +160,25 @@ export default function GraphAuditPage() {
               <div className="grid sm:grid-cols-2 gap-4">
                  {result.bias_metrics && Object.entries(result.bias_metrics).map(([k, v], i) => {
                     const isObj = typeof v === 'object' && v !== null;
-                    const isBiased = isObj ? !!(v as any).biased : false;
+                    const vObj = v as Record<string, unknown>;
+                    const isBiased = isObj ? !!vObj.biased : false;
                     
                     let primaryMetricValue: string | number | null = null;
                     let primaryMetricLabel = "Metric";
                     
                     if (isObj) {
                       if (k === "structural_bias") {
-                        const ratios = (v as any).disparity_ratios || {};
-                        const vals = Object.values(ratios) as number[];
+                        const ratios = (vObj.disparity_ratios as Record<string, number>) || {};
+                        const vals = Object.values(ratios);
                         primaryMetricValue = vals.length > 0 ? Math.min(...vals).toFixed(4) : "N/A";
                         primaryMetricLabel = "Worst Disparity Ratio";
                       } else if (k === "group_fairness") {
-                        const di = (v as any).disparate_impact || {};
-                        const diVals = Object.values(di).map((m: any) => m?.disparate_impact_ratio).filter(x => x !== undefined) as number[];
+                        const di = (vObj.disparate_impact as Record<string, Record<string, unknown>>) || {};
+                        const diVals = Object.values(di).map(m => m?.disparate_impact_ratio as number | undefined).filter(x => x !== undefined) as number[];
                         primaryMetricValue = diVals.length > 0 ? Math.min(...diVals).toFixed(4) : "N/A";
                         primaryMetricLabel = "Worst Disparate Impact";
                       } else if (k === "edge_bias") {
-                        primaryMetricValue = ((v as any).homophily_index || 0).toFixed(4);
+                        primaryMetricValue = ((vObj.homophily_index as number) || 0).toFixed(4);
                         primaryMetricLabel = "Homophily Index";
                       } else {
                         primaryMetricValue = "Completed";
