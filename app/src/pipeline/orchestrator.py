@@ -119,7 +119,17 @@ class PipelineOrchestrator:
         return {
             "graph_summary": graph_summary,
             "bias_metrics": bias_metrics,
-            "explanation": explanation_result.get("explanation", ""),
+            "explanation": {
+                "summary": explanation_result.get("explanation", ""),
+                "top_bias_drivers": [
+                    {
+                        "factor": factor,
+                        "description": factor,
+                        "severity": "high" if explanation_result.get("severity", 0) > 7 else "medium"
+                    }
+                    for factor in explanation_result.get("contributing_factors", [])
+                ],
+            },
             "severity": explanation_result.get("severity", 0),
             "affected_groups": explanation_result.get("affected_groups", []),
             "contributing_factors": explanation_result.get("contributing_factors", []),
