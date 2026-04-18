@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/utils/cn";
 import {
   LayoutDashboard,
+  BarChart3,
   FileText,
   Network,
   Brain,
@@ -13,6 +14,7 @@ import {
 
 const MOBILE_ITEMS = [
   { label: "Home", href: "/", icon: LayoutDashboard },
+  { label: "Analytics", href: "/analytics", icon: BarChart3 },
   { label: "Audit", href: "/audit", icon: FileText },
   { label: "Graph", href: "/graph-model-audit", icon: Network },
   { label: "Model", href: "/model-audit", icon: Brain },

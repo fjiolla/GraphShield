@@ -6,11 +6,13 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/utils/cn";
 import {
   LayoutDashboard,
+  BarChart3,
   FileText,
   GitFork,
   Network,
   Brain,
   Table2,
+  ClipboardList,
   Shield,
   ChevronLeft,
   ChevronRight,
@@ -25,11 +27,13 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: "Overview", href: "/", icon: LayoutDashboard, section: "Main" },
+  { label: "Analytics", href: "/analytics", icon: BarChart3, section: "Main" },
   { label: "Document Audit", href: "/audit", icon: FileText, section: "Audits" },
   { label: "Graph Audit", href: "/graph-audit", icon: GitFork, section: "Audits" },
   { label: "Graph Model Audit", href: "/graph-model-audit", icon: Network, section: "Audits" },
   { label: "Model Audit", href: "/model-audit", icon: Brain, section: "Audits" },
   { label: "Dataset Audit", href: "/struct-audit", icon: Table2, section: "Audits" },
+  { label: "Audit Trail", href: "/audit-trail", icon: ClipboardList, section: "System" },
 ];
 
 interface SidebarProps {
