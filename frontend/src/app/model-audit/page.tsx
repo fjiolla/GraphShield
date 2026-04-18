@@ -7,7 +7,7 @@ import { DropZone } from "@/components/ui/DropZone";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { useModelAuditStore } from "@/stores/useModelAuditStore";
-import { AlertCircle, Brain, Target, Combine } from "lucide-react";
+import { AlertCircle, Target, Combine } from "lucide-react";
 import { VerdictBadge } from "@/components/fairness/VerdictBadge";
 import { FairnessScorePanel } from "@/components/fairness/FairnessScorePanel";
 import { RemediationPanel } from "@/components/fairness/RemediationPanel";
@@ -164,18 +164,6 @@ export default function ModelAuditPage() {
                 />
               )}
 
-
-              {result.counterfactual_example && Object.keys(result.counterfactual_example).length > 0 && (
-                <div className="gs-card p-6 bg-info-50/50">
-                  <h3 className="text-[14px] font-semibold text-info-800 mb-4 border-b border-info-100 pb-2 flex items-center gap-2">
-                    <Brain className="w-4 h-4"/> Counterfactual Example
-                  </h3>
-                  <p className="text-[13px] text-warm-600 mb-2">Changing the protected attribute alters the prediction:</p>
-                  <pre className="text-[11px] bg-white p-3 rounded-lg border border-warm-200 overflow-x-auto text-warm-800">
-                    {JSON.stringify(result.counterfactual_example, null, 2)}
-                  </pre>
-                </div>
-              )}
 
               {/* Narrative & Remediation */}
               <NarrativeSection narrative={result.ai_narrative} />

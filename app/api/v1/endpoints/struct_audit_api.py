@@ -1,17 +1,46 @@
+import json
 import os
+import sqlite3
 import time
 import shutil
-from typing import Optional
+from datetime import datetime, timezone
+from uuid import uuid4
 from fastapi import APIRouter, File, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
-from app.core.struct_local_config import DATA_DIR
+from app.core.struct_local_config import DATA_DIR, SQLITE_DB_PATH
 from app.services.struct_ingestion import struct_ingest_file
 from app.services.struct_intelligence import struct_classify_columns
 from app.services.struct_statistics import struct_run_fairness_audit
 from app.services.struct_reporting import struct_generate_report
 
 router = APIRouter()
-_state = {}
+_state: dict = {}
+
+
+def _persist_audit_session(session_id: str, table_name: str, report: dict) -> None:
+    """Write dataset audit result to SQLite so it survives restarts and appears in Audit Trail."""
+    try:
+        conn = sqlite3.connect(SQLITE_DB_PATH, check_same_thread=False)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS audit_sessions (
+                session_id TEXT PRIMARY KEY,
+                table_name TEXT,
+                report_json TEXT,
+                dataset_path TEXT,
+                created_at TEXT
+            )
+        """)
+        conn.execute(
+            "INSERT OR REPLACE INTO audit_sessions (session_id, table_name, report_json, dataset_path, created_at) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (session_id, table_name, json.dumps(report), "", datetime.now(timezone.utc).isoformat()),
+        )
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        import logging
+        logging.getLogger("struct_audit_api").warning("Failed to persist audit session: %s", e)
+
 
 @router.post("/upload")
 async def upload_dataset(file: UploadFile = File(...)):
@@ -26,6 +55,7 @@ async def upload_dataset(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+
 @router.post("/run-audit")
 async def run_audit():
     if "table_name" not in _state:
@@ -38,7 +68,11 @@ async def run_audit():
         time.sleep(61)
         report = struct_generate_report(audit, classification)
         _state["report"] = report
-        
+
+        # Persist to SQLite so it survives restarts and appears in Audit Trail / Analytics
+        session_id = str(uuid4())
+        _persist_audit_session(session_id, table, report)
+
         file_path = _state.get("file_path")
         if file_path and os.path.exists(file_path):
             os.remove(file_path)
@@ -51,11 +85,13 @@ async def run_audit():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.get("/report")
 async def get_report():
     if "report" not in _state:
         raise HTTPException(status_code=404, detail="No report available. Run /run-audit first.")
     return JSONResponse(content=_state["report"])
+
 
 @router.get("/tables")
 async def list_tables():

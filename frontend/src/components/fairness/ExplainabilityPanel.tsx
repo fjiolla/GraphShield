@@ -10,6 +10,11 @@ interface ExplainabilityPanelProps {
 }
 
 export function ExplainabilityPanel({ explanation }: ExplainabilityPanelProps) {
+  // Guard: backend may return unexpected shape — never crash the page
+  if (!explanation) return null;
+  const drivers = Array.isArray(explanation.top_bias_drivers) ? explanation.top_bias_drivers : [];
+  const summary = explanation.summary ?? "";
+
   return (
     <div className="gs-card">
       <div className="px-6 py-4 border-b border-warm-100 bg-warm-50/50 rounded-t-2xl">
@@ -19,12 +24,14 @@ export function ExplainabilityPanel({ explanation }: ExplainabilityPanelProps) {
       </div>
       
       <div className="p-6">
-        <p className="text-[14px] text-warm-700 leading-relaxed mb-6 font-medium">
-          {explanation.summary}
-        </p>
+        {summary && (
+          <p className="text-[14px] text-warm-700 leading-relaxed mb-6 font-medium">
+            {summary}
+          </p>
+        )}
 
         <div className="space-y-4">
-          {explanation.top_bias_drivers.map((driver, i) => {
+          {drivers.map((driver, i) => {
             let Icon = Info;
             let bgColor = "bg-info-50";
             let textColor = "text-info-700";
@@ -49,17 +56,17 @@ export function ExplainabilityPanel({ explanation }: ExplainabilityPanelProps) {
                 </div>
                 <div>
                   <h4 className="text-[14px] font-bold text-warm-800 mb-1 capitalize">
-                    {driver.factor.replace(/_/g, " ")} Disparity
+                    {(driver.factor ?? "").replace(/_/g, " ")} Disparity
                   </h4>
                   <p className="text-[13px] text-warm-600 leading-relaxed">
-                    {driver.description}
+                    {driver.description ?? ""}
                   </p>
                 </div>
               </div>
             );
           })}
 
-          {explanation.top_bias_drivers.length === 0 && (
+          {drivers.length === 0 && (
             <div className="p-6 text-center text-warm-400 bg-warm-50 rounded-xl border border-dashed border-warm-200">
               No significant bias drivers identified.
             </div>

@@ -29,9 +29,24 @@ export interface StructRunAuditResponse {
   risk_level: string;
 }
 
+export interface DatasetOverview {
+  table_name?: string;
+  total_rows?: number;
+  total_columns?: number;
+  sensitive_columns?: string[];
+  target_columns?: string[];
+  proxy_columns?: string[];
+  [key: string]: unknown;
+}
+
 export interface StructReportResponse {
   bias_detected?: boolean;
   risk_level?: string;
+  summary?: string;
+  findings?: string[];
+  recommendations?: string[];
+  dataset_overview?: DatasetOverview;
+  bias_metrics?: Record<string, number | string>;
   [key: string]: unknown;
 }
 

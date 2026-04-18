@@ -16,6 +16,8 @@ import {
   ArrowRight
 } from "lucide-react";
 import api from "@/lib/api";
+import { getAudits } from "@/lib/systemApi";
+import { listTables } from "@/lib/structAuditApi";
 
 interface HealthData {
   status: "up" | "down" | "checking";
@@ -24,17 +26,33 @@ interface HealthData {
 
 export default function OverviewDashboard() {
   const [health, setHealth] = useState<HealthData>({ status: "checking", message: "Connecting to API..." });
+  const [totalAudits, setTotalAudits] = useState<number | null>(null);
+  const [avgScore, setAvgScore] = useState<number | null>(null);
+  const [tableCount, setTableCount] = useState<number | null>(null);
 
   useEffect(() => {
-    const checkHealth = async () => {
-      try {
-        await api.get("/health");
-        setHealth({ status: "up", message: "API Connected & Healthy" });
-      } catch {
-        setHealth({ status: "down", message: "Cannot connect to Backend API" });
-      }
-    };
-    checkHealth();
+    // Check backend health
+    api.get("/health")
+      .then(() => setHealth({ status: "up", message: "API Connected & Healthy" }))
+      .catch(() => setHealth({ status: "down", message: "Cannot connect to Backend API" }));
+
+    // Load real audit counts
+    getAudits()
+      .then((audits) => {
+        setTotalAudits(audits.length);
+        if (audits.length > 0) {
+          const avg = audits.reduce((sum, a) => sum + (a.score || 0), 0) / audits.length;
+          setAvgScore(Math.round(avg));
+        } else {
+          setAvgScore(0);
+        }
+      })
+      .catch(() => { setTotalAudits(0); setAvgScore(0); });
+
+    // Load real table count
+    listTables()
+      .then(({ tables }) => setTableCount(tables.length))
+      .catch(() => setTableCount(0));
   }, []);
 
   return (
@@ -48,20 +66,20 @@ export default function OverviewDashboard() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard 
           label="Total Audits" 
-          value="0" 
-          subtext="Awaiting first audit" 
+          value={totalAudits === null ? "—" : totalAudits} 
+          subtext={totalAudits === null ? "Loading..." : totalAudits === 0 ? "Awaiting first audit" : `${totalAudits} completed`} 
           icon={<Activity />} 
         />
         <StatCard 
           label="Avg Fairness Score" 
-          value="0.0" 
+          value={avgScore === null ? "—" : avgScore}
           subtext="Across all tracked models" 
           icon={<ShieldCheck />} 
         />
         
         <StatCard 
           label="Knowledge Vault" 
-          value="0" 
+          value={tableCount === null ? "—" : tableCount} 
           subtext="Active SQLite datasets" 
           icon={<Table2 />} 
         />

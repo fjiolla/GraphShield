@@ -25,7 +25,7 @@ export default function AnalyticsPage() {
 
   // Compute metrics from the data array
   const totalAudits = data.length;
-  
+
   let passCount = 0;
   let warnCount = 0;
   let failCount = 0;
@@ -51,7 +51,7 @@ export default function AnalyticsPage() {
     // Check failures
     const u = r.scorecard.universal_metrics;
     const st = r.scorecard.structural_metrics;
-    
+
     if (u.demographic_parity.status === "FAIL") failReasons["Demographic Parity"]++;
     if (u.equalized_odds.status === "FAIL") failReasons["Equalized Odds"]++;
     if (u.disparate_impact.status === "FAIL") failReasons["Disparate Impact"]++;
@@ -87,8 +87,8 @@ export default function AnalyticsPage() {
 
   return (
     <PageWrapper>
-      <PageHeader 
-        title="Analytics Dashboard" 
+      <PageHeader
+        title="Analytics Dashboard"
         description="Historical bias trends and system-wide fairness intelligence"
       />
 
@@ -111,7 +111,7 @@ export default function AnalyticsPage() {
             height={320}
           />
         </div>
-        
+
         {/* Status distribution */}
         <div>
           <ChartDonut
@@ -132,10 +132,10 @@ export default function AnalyticsPage() {
           layout="horizontal"
           height={300}
         />
-        
+
         {/* Audit Volume over time */}
         <ChartArea
-          data={lineChartData.map(v => ({...v, volume: Math.floor(Math.random() * 5) + 1}))} // Mock volume mapping
+          data={lineChartData.map(v => ({ ...v, volume: Math.floor(Math.random() * 5) + 1 }))} // Mock volume mapping
           xKey="date"
           areaKey="volume"
           title="Audit Volume Over Time"

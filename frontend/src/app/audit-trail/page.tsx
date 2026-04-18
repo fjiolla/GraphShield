@@ -40,8 +40,8 @@ export default function AuditTrailPage() {
 
   return (
     <PageWrapper>
-      <PageHeader 
-        title="Audit Trail" 
+      <PageHeader
+        title="Audit Trail"
         description="Immutable record of all fairness audits across the organization."
       />
 
@@ -73,7 +73,7 @@ export default function AuditTrailPage() {
             </div>
             <h3 className="font-display text-lg text-warm-800 mb-2">No Audits Found</h3>
             <p className="text-sm text-warm-500 max-w-sm">
-              {searchTerm 
+              {searchTerm
                 ? "No previous audits match your search criteria. Try a different query."
                 : "Your organization hasn't performed any fairness audits yet."}
             </p>

@@ -190,12 +190,11 @@ export default function StructAuditPage() {
             <div className="space-y-6 animate-fade-in">
               <div className="gs-card p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                 <div>
-                  <h2 className="font-display text-xl text-warm-800 mb-2">Fairness Report generated</h2>
-                  <p className="text-warm-500 text-[14px]">
-                    Dataset was evaluated against fairness criteria.
-                  </p>
+                  <h2 className="font-display text-xl text-warm-800 mb-2">Fairness Report Generated</h2>
+                  <p className="text-warm-500 text-[14px]">Dataset evaluated against universal fairness criteria.</p>
                 </div>
-                <div className="flex-shrink-0 bg-warm-50 px-6 py-4 rounded-xl border border-warm-100 w-full md:w-auto text-center">
+                <div className="flex flex-col sm:flex-row gap-3 items-center">
+                  <div className="flex-shrink-0 bg-warm-50 px-6 py-4 rounded-xl border border-warm-100 text-center">
                     <p className="text-[11px] font-bold text-warm-500 uppercase tracking-widest mb-2">Overall Risk</p>
                     <Badge 
                       level={report.risk_level === "High" ? "fail" : report.risk_level === "Medium" ? "warn" : "pass"} 
@@ -203,14 +202,129 @@ export default function StructAuditPage() {
                     >
                       {report.risk_level || "UNKNOWN"}
                     </Badge>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement("a");
+                      a.href = url;
+                      a.download = `graphshield_report_${new Date().toISOString().slice(0,10)}.json`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                    className="px-4 py-2 rounded-xl border border-warm-200 bg-white text-warm-700 text-[13px] font-medium hover:bg-warm-50 transition-colors flex items-center gap-2"
+                  >
+                    ↓ Download Report
+                  </button>
                 </div>
               </div>
 
-              <div className="gs-card p-6 bg-surface-alt">
-                 <pre className="text-[12px] text-warm-800 overflow-x-auto whitespace-pre-wrap">
-                   {JSON.stringify(report, null, 2)}
-                 </pre>
-              </div>
+              {/* Summary */}
+              {report.summary && (
+                <div className="gs-card p-6">
+                  <h3 className="text-[14px] font-semibold text-warm-800 mb-3 uppercase tracking-wide border-b border-warm-100 pb-2">Summary</h3>
+                  <p className="text-[14px] text-warm-700 leading-relaxed">{report.summary}</p>
+                </div>
+              )}
+
+              {/* Dataset Overview */}
+              {report.dataset_overview && (
+                <div className="gs-card p-6">
+                  <h3 className="text-[14px] font-semibold text-warm-800 mb-4 uppercase tracking-wide border-b border-warm-100 pb-2">Dataset Overview</h3>
+                  <div className="grid sm:grid-cols-3 gap-4">
+                    {report.dataset_overview.table_name && (
+                      <div className="bg-warm-50 rounded-xl p-4">
+                        <p className="text-[11px] font-semibold text-warm-400 uppercase tracking-wider mb-1">Table Name</p>
+                        <p className="text-[18px] font-bold text-warm-800 metric-value">{report.dataset_overview.table_name}</p>
+                      </div>
+                    )}
+                    {report.dataset_overview.total_rows !== undefined && (
+                      <div className="bg-warm-50 rounded-xl p-4">
+                        <p className="text-[11px] font-semibold text-warm-400 uppercase tracking-wider mb-1">Total Rows</p>
+                        <p className="text-[18px] font-bold text-warm-800 metric-value">{report.dataset_overview.total_rows}</p>
+                      </div>
+                    )}
+                    {report.dataset_overview.total_columns !== undefined && (
+                      <div className="bg-warm-50 rounded-xl p-4">
+                        <p className="text-[11px] font-semibold text-warm-400 uppercase tracking-wider mb-1">Total Columns</p>
+                        <p className="text-[18px] font-bold text-warm-800 metric-value">{report.dataset_overview.total_columns}</p>
+                      </div>
+                    )}
+                  </div>
+                  {report.dataset_overview.sensitive_columns && report.dataset_overview.sensitive_columns.length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-[12px] font-semibold text-warm-500 uppercase tracking-wider mb-2">Sensitive Columns</p>
+                      <div className="flex flex-wrap gap-2">
+                        {report.dataset_overview.sensitive_columns.map((c, i) => (
+                          <span key={i} className="px-3 py-1 bg-danger-50 text-danger-700 rounded-lg text-[12px] font-medium border border-danger-100">{c}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {report.dataset_overview.target_columns && report.dataset_overview.target_columns.length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-[12px] font-semibold text-warm-500 uppercase tracking-wider mb-2">Target Columns</p>
+                      <div className="flex flex-wrap gap-2">
+                        {report.dataset_overview.target_columns.map((c, i) => (
+                          <span key={i} className="px-3 py-1 bg-info-50 text-info-700 rounded-lg text-[12px] font-medium border border-info-100">{c}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {report.dataset_overview.proxy_columns && report.dataset_overview.proxy_columns.length > 0 && (
+                    <div className="mt-4">
+                      <p className="text-[12px] font-semibold text-warm-500 uppercase tracking-wider mb-2">Proxy Columns</p>
+                      <div className="flex flex-wrap gap-2">
+                        {report.dataset_overview.proxy_columns.map((c, i) => (
+                          <span key={i} className="px-3 py-1 bg-warning-50 text-warning-700 rounded-lg text-[12px] font-medium border border-warning-100">{c}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Bias Metrics */}
+              {report.bias_metrics && Object.keys(report.bias_metrics).length > 0 && (
+                <div className="gs-card p-6">
+                  <h3 className="text-[14px] font-semibold text-warm-800 mb-4 uppercase tracking-wide border-b border-warm-100 pb-2">Bias Metrics</h3>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {Object.entries(report.bias_metrics).map(([k, v]) => (
+                      <div key={k} className="flex justify-between items-center p-3 bg-warm-50 rounded-xl border border-warm-100">
+                        <span className="text-[13px] text-warm-600 font-medium">{k.replace(/_/g," ")}</span>
+                        <span className="text-[13px] font-bold text-warm-800 metric-value">
+                          {typeof v === "number" ? v.toFixed(4) : String(v)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Findings */}
+              {report.findings && report.findings.length > 0 && (
+                <div className="gs-card p-6">
+                  <h3 className="text-[14px] font-semibold text-warm-800 mb-4 uppercase tracking-wide border-b border-warm-100 pb-2">Findings</h3>
+                  <div className="space-y-3">
+                    {report.findings.map((f, i) => (
+                      <div key={i} className="p-3 bg-warning-50 border border-warning-100 rounded-xl text-[13px] text-warning-800">{f}</div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Recommendations */}
+              {report.recommendations && report.recommendations.length > 0 && (
+                <div className="gs-card p-6">
+                  <h3 className="text-[14px] font-semibold text-warm-800 mb-4 uppercase tracking-wide border-b border-warm-100 pb-2">Recommendations</h3>
+                  <div className="space-y-3">
+                    {report.recommendations.map((r, i) => (
+                      <div key={i} className="p-3 bg-success-50 border border-success-100 rounded-xl text-[13px] text-success-800">{r}</div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
