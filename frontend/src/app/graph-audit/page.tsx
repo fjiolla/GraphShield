@@ -158,16 +158,56 @@ export default function GraphAuditPage() {
               </h3>
               
               <div className="grid sm:grid-cols-2 gap-4">
-                 {result.bias_metrics && Object.entries(result.bias_metrics).map(([k, v], i) => (
-                    <div key={i} className="gs-card p-5">
-                      <p className="text-[12px] font-medium text-warm-400 uppercase tracking-wider mb-2">
-                        {k.replace(/_/g, " ")}
-                      </p>
-                      <p className="text-2xl font-semibold text-warm-800 metric-value">
-                        {typeof v === "number" ? v.toFixed(4) : String(v)}
-                      </p>
-                    </div>
-                 ))}
+                 {result.bias_metrics && Object.entries(result.bias_metrics).map(([k, v], i) => {
+                    const isObj = typeof v === 'object' && v !== null;
+                    const isBiased = isObj ? !!(v as any).biased : false;
+                    
+                    let primaryMetricValue: string | number | null = null;
+                    let primaryMetricLabel = "Metric";
+                    
+                    if (isObj) {
+                      if (k === "structural_bias") {
+                        const ratios = (v as any).disparity_ratios || {};
+                        const vals = Object.values(ratios) as number[];
+                        primaryMetricValue = vals.length > 0 ? Math.min(...vals).toFixed(4) : "N/A";
+                        primaryMetricLabel = "Worst Disparity Ratio";
+                      } else if (k === "group_fairness") {
+                        const di = (v as any).disparate_impact || {};
+                        const diVals = Object.values(di).map((m: any) => m?.disparate_impact_ratio).filter(x => x !== undefined) as number[];
+                        primaryMetricValue = diVals.length > 0 ? Math.min(...diVals).toFixed(4) : "N/A";
+                        primaryMetricLabel = "Worst Disparate Impact";
+                      } else if (k === "edge_bias") {
+                        primaryMetricValue = ((v as any).homophily_index || 0).toFixed(4);
+                        primaryMetricLabel = "Homophily Index";
+                      } else {
+                        primaryMetricValue = "Completed";
+                        primaryMetricLabel = "Status";
+                      }
+                    } else {
+                      primaryMetricValue = typeof v === "number" ? v.toFixed(4) : String(v);
+                    }
+
+                    return (
+                      <div key={i} className={`gs-card p-5 border-l-4 ${isObj ? (isBiased ? 'border-l-danger-500 bg-danger-50/30' : 'border-l-sage-500 bg-sage-50/30') : 'border-l-warm-300'}`}>
+                        <div className="flex justify-between items-start mb-4">
+                          <p className="text-[12px] font-bold text-warm-600 uppercase tracking-wider">
+                            {k.replace(/_/g, " ")}
+                          </p>
+                          {isObj && (
+                            <Badge level={isBiased ? "fail" : "pass"}>
+                              {isBiased ? "BIASED" : "FAIR"}
+                            </Badge>
+                          )}
+                        </div>
+                        <div>
+                           <p className="text-[10px] font-semibold text-warm-500 mb-1 uppercase tracking-wider">{primaryMetricLabel}</p>
+                           <p className={`text-2xl font-semibold metric-value ${isBiased ? 'text-danger-700' : 'text-warm-800'}`}>
+                             {primaryMetricValue}
+                           </p>
+                        </div>
+                      </div>
+                    );
+                 })}
                  {(!result.bias_metrics || Object.keys(result.bias_metrics).length === 0) && (
                    <div className="sm:col-span-2 p-6 text-center text-warm-400 bg-warm-50 rounded-xl">
                       No numeric metrics returned by this endpoint algorithm run.
