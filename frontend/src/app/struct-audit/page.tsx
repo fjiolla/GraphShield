@@ -181,7 +181,7 @@ export default function StructAuditPage() {
                  <StatCard label="Column Count" value={uploadResult.ingestion.column_count} />
               </div>
               <div className="mt-4 p-4 bg-warm-50 rounded-xl text-warm-700 text-sm">
-                 <strong>Detected Columns:</strong> {uploadResult.ingestion.columns.join(", ")}
+                 <strong>Detected Columns:</strong> {Array.isArray(uploadResult.ingestion.columns) ? uploadResult.ingestion.columns.join(", ") : String(uploadResult.ingestion.columns)}
               </div>
             </div>
           )}
@@ -229,7 +229,7 @@ export default function StructAuditPage() {
               )}
 
               {/* Dataset Overview */}
-              {report.dataset_overview && (
+              {report.dataset_overview ? (
                 <div className="gs-card p-6">
                   <h3 className="text-[14px] font-semibold text-warm-800 mb-4 uppercase tracking-wide border-b border-warm-100 pb-2">Dataset Overview</h3>
                   <div className="grid sm:grid-cols-3 gap-4">
@@ -252,41 +252,41 @@ export default function StructAuditPage() {
                       </div>
                     )}
                   </div>
-                  {report.dataset_overview.sensitive_columns && report.dataset_overview.sensitive_columns.length > 0 && (
+                  {Array.isArray(report.dataset_overview.sensitive_columns) && report.dataset_overview.sensitive_columns.length > 0 && (
                     <div className="mt-4">
                       <p className="text-[12px] font-semibold text-warm-500 uppercase tracking-wider mb-2">Sensitive Columns</p>
                       <div className="flex flex-wrap gap-2">
-                        {report.dataset_overview.sensitive_columns.map((c, i) => (
+                        {report.dataset_overview.sensitive_columns.map((c: string, i: number) => (
                           <span key={i} className="px-3 py-1 bg-danger-50 text-danger-700 rounded-lg text-[12px] font-medium border border-danger-100">{c}</span>
                         ))}
                       </div>
                     </div>
                   )}
-                  {report.dataset_overview.target_columns && report.dataset_overview.target_columns.length > 0 && (
+                  {Array.isArray(report.dataset_overview.target_columns) && report.dataset_overview.target_columns.length > 0 && (
                     <div className="mt-4">
                       <p className="text-[12px] font-semibold text-warm-500 uppercase tracking-wider mb-2">Target Columns</p>
                       <div className="flex flex-wrap gap-2">
-                        {report.dataset_overview.target_columns.map((c, i) => (
+                        {report.dataset_overview.target_columns.map((c: string, i: number) => (
                           <span key={i} className="px-3 py-1 bg-info-50 text-info-700 rounded-lg text-[12px] font-medium border border-info-100">{c}</span>
                         ))}
                       </div>
                     </div>
                   )}
-                  {report.dataset_overview.proxy_columns && report.dataset_overview.proxy_columns.length > 0 && (
+                  {Array.isArray(report.dataset_overview.proxy_columns) && report.dataset_overview.proxy_columns.length > 0 && (
                     <div className="mt-4">
                       <p className="text-[12px] font-semibold text-warm-500 uppercase tracking-wider mb-2">Proxy Columns</p>
                       <div className="flex flex-wrap gap-2">
-                        {report.dataset_overview.proxy_columns.map((c, i) => (
+                        {report.dataset_overview.proxy_columns.map((c: string, i: number) => (
                           <span key={i} className="px-3 py-1 bg-warning-50 text-warning-700 rounded-lg text-[12px] font-medium border border-warning-100">{c}</span>
                         ))}
                       </div>
                     </div>
                   )}
                 </div>
-              )}
+              ) : null}
 
-              {/* Bias Metrics */}
-              {report.bias_metrics && Object.keys(report.bias_metrics).length > 0 && (
+              {/* Bias Metrics (Legacy Schema Support) */}
+              {report.bias_metrics && typeof report.bias_metrics === 'object' && Object.keys(report.bias_metrics).length > 0 && (
                 <div className="gs-card p-6">
                   <h3 className="text-[14px] font-semibold text-warm-800 mb-4 uppercase tracking-wide border-b border-warm-100 pb-2">Bias Metrics</h3>
                   <div className="grid sm:grid-cols-2 gap-4">
@@ -294,7 +294,7 @@ export default function StructAuditPage() {
                       <div key={k} className="flex justify-between items-center p-3 bg-warm-50 rounded-xl border border-warm-100">
                         <span className="text-[13px] text-warm-600 font-medium">{k.replace(/_/g," ")}</span>
                         <span className="text-[13px] font-bold text-warm-800 metric-value">
-                          {typeof v === "number" ? v.toFixed(4) : String(v)}
+                          {typeof v === "number" ? v.toFixed(4) : typeof v === "object" ? JSON.stringify(v) : String(v)}
                         </span>
                       </div>
                     ))}
@@ -302,12 +302,38 @@ export default function StructAuditPage() {
                 </div>
               )}
 
+              {/* Metrics Summary (New Schema Support) */}
+              {report.metrics_summary && typeof report.metrics_summary === 'object' && Object.keys(report.metrics_summary).length > 0 && (
+                <div className="gs-card p-6">
+                  <h3 className="text-[14px] font-semibold text-warm-800 mb-4 uppercase tracking-wide border-b border-warm-100 pb-2">Disparate Impact & Parity</h3>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    {Object.entries(report.metrics_summary).map(([colPair, rawMetrics]) => {
+                      const metrics = rawMetrics as { worst_disparate_impact_ratio: number | null; worst_statistical_parity_difference: number | null };
+                      return (
+                      <div key={colPair} className="flex flex-col gap-2 p-4 bg-warm-50 rounded-xl border border-warm-100">
+                        <span className="text-[12px] font-bold text-warm-600 tracking-wide uppercase break-words">{colPair.replace(/\./g, " × ")}</span>
+                        
+                        <div className="flex justify-between items-center mt-2">
+                          <span className="text-[12px] text-warm-500">Worst DIR</span>
+                          <span className="text-[14px] font-bold metric-value text-danger-600">{metrics.worst_disparate_impact_ratio !== null && metrics.worst_disparate_impact_ratio !== undefined ? metrics.worst_disparate_impact_ratio?.toFixed(4) : "N/A"}</span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center">
+                          <span className="text-[12px] text-warm-500">Worst SPD</span>
+                          <span className="text-[14px] font-bold metric-value text-danger-600">{metrics.worst_statistical_parity_difference !== null && metrics.worst_statistical_parity_difference !== undefined ? metrics.worst_statistical_parity_difference?.toFixed(4) : "N/A"}</span>
+                        </div>
+                      </div>
+                    )})}
+                  </div>
+                </div>
+              )}
+
               {/* Findings */}
-              {report.findings && report.findings.length > 0 && (
+              {Array.isArray(report.findings) && report.findings.length > 0 && (
                 <div className="gs-card p-6">
                   <h3 className="text-[14px] font-semibold text-warm-800 mb-4 uppercase tracking-wide border-b border-warm-100 pb-2">Findings</h3>
                   <div className="space-y-3">
-                    {report.findings.map((f, i) => (
+                    {report.findings.map((f: string, i: number) => (
                       <div key={i} className="p-3 bg-warning-50 border border-warning-100 rounded-xl text-[13px] text-warning-800">{f}</div>
                     ))}
                   </div>
@@ -315,11 +341,11 @@ export default function StructAuditPage() {
               )}
 
               {/* Recommendations */}
-              {report.recommendations && report.recommendations.length > 0 && (
+              {Array.isArray(report.recommendations) && report.recommendations.length > 0 && (
                 <div className="gs-card p-6">
                   <h3 className="text-[14px] font-semibold text-warm-800 mb-4 uppercase tracking-wide border-b border-warm-100 pb-2">Recommendations</h3>
                   <div className="space-y-3">
-                    {report.recommendations.map((r, i) => (
+                    {report.recommendations.map((r: string, i: number) => (
                       <div key={i} className="p-3 bg-success-50 border border-success-100 rounded-xl text-[13px] text-success-800">{r}</div>
                     ))}
                   </div>

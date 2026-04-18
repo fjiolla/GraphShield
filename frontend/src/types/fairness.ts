@@ -36,7 +36,6 @@ export interface DatasetOverview {
   sensitive_columns?: string[];
   target_columns?: string[];
   proxy_columns?: string[];
-  [key: string]: unknown;
 }
 
 export interface StructReportResponse {
@@ -47,7 +46,11 @@ export interface StructReportResponse {
   recommendations?: string[];
   dataset_overview?: DatasetOverview;
   bias_metrics?: Record<string, number | string>;
-  [key: string]: unknown;
+  metrics_summary?: Record<string, Record<string, unknown>>;
+  metrics?: Record<string, Record<string, unknown>>;
+  column_explanations?: Record<string, Record<string, unknown>>;
+  explanations?: Record<string, unknown>;
+  research_grounding?: Record<string, unknown>;
 }
 
 /* ═══════════════════════════════════════════════
