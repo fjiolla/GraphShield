@@ -13,6 +13,10 @@ WORKDIR /app
 COPY --chown=user requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Download the spaCy language model explicitly (wheel URL in requirements.txt
+# is a fallback, but this ensures it's always present in the image)
+RUN python -m spacy download en_core_web_sm
+
 COPY --chown=user app ./app
 
 EXPOSE 7860
