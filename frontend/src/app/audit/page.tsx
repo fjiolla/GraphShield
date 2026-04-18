@@ -207,7 +207,7 @@ export default function DocumentAuditPage() {
               )}
 
               {/* Remediation Plan */}
-              {Object.keys(result.recommendation.remediation_plan).length > 0 && (
+              {result.recommendation?.remediation_plan && (Array.isArray(result.recommendation.remediation_plan) ? result.recommendation.remediation_plan.length > 0 : Object.keys(result.recommendation.remediation_plan).length > 0) && (
                 <>
                   <h3 className="font-display text-lg text-warm-800 mt-8 mb-4 border-b border-warm-100 pb-2">
                     Action Plan

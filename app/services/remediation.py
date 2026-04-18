@@ -8,12 +8,23 @@ async def generate_remediation_plan(bias_findings: dict):
         You are an AI Remediation Expert. 
         Based on these bias findings: {bias_findings}
         
-        1. For each group, provide a specific 'Remediation Action'.
-        2. Generate a 'Counter-factual Example' (how the text SHOULD look to be fair).
-        3. Suggest a 'Synthetic Data Ratio' (e.g., 'Increase sample size of Group X by 25%').
-        4. Provide a 'Governance Tip' for the management team.
+        Provide specific remediation actions and counter-factual examples for the groups identified.
         
-        Return the result as a STRICT JSON object.
+        You MUST return the result as a STRICT JSON array of objects, where each object has EXACTLY these fields:
+        - "priority": one of ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
+        - "action": A short title for the action
+        - "description": A detailed description including any counter-factual examples (how the text SHOULD look)
+        - "steps": An array of strings containing step-by-step instructions
+        
+        Example format:
+        [
+          {{
+            "priority": "HIGH",
+            "action": "Address Age Bias in Job Description",
+            "description": "The description uses terms like 'digital native' which implicitly excludes older candidates. Counter-factual: 'Seeking candidates proficient in modern digital tools'.",
+            "steps": ["Remove age-coded language", "Add inclusive EEO statement"]
+          }}
+        ]
         """
 
         response = client.chat.completions.create(
