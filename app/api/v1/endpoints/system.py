@@ -81,6 +81,39 @@ async def list_audits():
                 except Exception:
                     continue
 
+        # ── Document Audits ──
+        cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='document_audits'")
+        if cursor.fetchone():
+            cursor = conn.execute(
+                "SELECT session_id, filename, result_json, timestamp FROM document_audits ORDER BY timestamp DESC"
+            )
+            for row in cursor.fetchall():
+                try:
+                    result_data = json.loads(row["result_json"]) if row["result_json"] else {}
+                    
+                    status = "neutral"
+                    qualitative = result_data.get("findings", {}).get("qualitative_analysis", {})
+                    dynamic_profile = qualitative.get("dynamic_profile", {})
+                    groups = dynamic_profile.get("groups", [])
+                    
+                    if groups:
+                        has_explicit = any(g.get("bias_type") == "explicit" for g in groups)
+                        status = "fail" if has_explicit else "warn"
+                    else:
+                        status = "pass"
+
+                    audits.append({
+                        "id": row["session_id"],
+                        "type": "Document Audit",
+                        "target": row["filename"] or "Unknown Document",
+                        "date": row["timestamp"],
+                        "status": status,
+                        "score": 0,
+                        "raw_result": result_data,
+                    })
+                except Exception:
+                    continue
+
         # Sort all by date descending
         audits.sort(key=lambda x: x.get("date") or "", reverse=True)
         return audits
