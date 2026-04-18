@@ -4,7 +4,7 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://fjiolla-graphshield
 
 const api = axios.create({
   baseURL: API_BASE,
-  timeout: 120000, // 2 min — some endpoints are slow (Groq rate limit)
+  timeout: 300000, // 5 min — ML endpoints (SHAP, graph traversal) can be slow on HF free tier
   headers: {
     Accept: "application/json",
   },

@@ -13,8 +13,6 @@ import {
   Brain,
   Table2,
   ClipboardList,
-  Plug,
-  Settings,
   Shield,
   ChevronLeft,
   ChevronRight,
@@ -36,8 +34,6 @@ const NAV_ITEMS: NavItem[] = [
   { label: "Model Audit", href: "/model-audit", icon: Brain, section: "Audits" },
   { label: "Dataset Audit", href: "/struct-audit", icon: Table2, section: "Audits" },
   { label: "Audit Trail", href: "/audit-trail", icon: ClipboardList, section: "System" },
-  { label: "Connections", href: "/connections", icon: Plug, section: "System" },
-  { label: "Settings", href: "/settings", icon: Settings, section: "System" },
 ];
 
 interface SidebarProps {

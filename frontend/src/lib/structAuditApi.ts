@@ -11,14 +11,16 @@ export async function uploadDataset(file: File): Promise<StructUploadResponse> {
   const { data } = await api.post<StructUploadResponse>(
     "/api/v1/struct-audit/upload",
     formData,
-    { headers: { "Content-Type": "multipart/form-data" } }
+    { headers: { "Content-Type": "multipart/form-data" }, timeout: 300000 }
   );
   return data;
 }
 
 export async function runAudit(): Promise<StructRunAuditResponse> {
   const { data } = await api.post<StructRunAuditResponse>(
-    "/api/v1/struct-audit/run-audit"
+    "/api/v1/struct-audit/run-audit",
+    undefined,
+    { timeout: 300000 }
   );
   return data;
 }

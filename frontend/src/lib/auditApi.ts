@@ -7,7 +7,7 @@ export async function ingestDocument(file: File): Promise<AuditIngestResponse> {
   const { data } = await api.post<AuditIngestResponse>(
     "/api/v1/audit/ingest",
     formData,
-    { headers: { "Content-Type": "multipart/form-data" } }
+    { headers: { "Content-Type": "multipart/form-data" }, timeout: 300000 }
   );
   return data;
 }

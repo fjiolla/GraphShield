@@ -164,44 +164,18 @@ export default function ModelAuditPage() {
                 />
               )}
 
-              <div className="grid md:grid-cols-2 gap-6">
-                 <div className="gs-card p-6">
-                   <h3 className="text-[14px] font-semibold text-warm-800 mb-4 border-b border-warm-100 pb-2">
-                     Feature Importance (SHAP)
-                   </h3>
-                   <div className="space-y-4">
-                     {(() => {
-                       const maxShap = Math.max(1e-5, ...result.shap_top_features.map(f => f.importance));
-                       return result.shap_top_features.map((f, i) => (
-                         <div key={i} className="space-y-1">
-                           <div className="flex justify-between text-[13px]">
-                             <span className="text-warm-700 font-medium">{f.feature}</span>
-                             <span className="font-mono text-warm-500">{f.importance.toFixed(4)}</span>
-                           </div>
-                           <div className="w-full bg-warm-100 rounded-full h-2">
-                             <div 
-                               className="bg-sage-500 h-2 rounded-full transition-all duration-500" 
-                               style={{ width: `${Math.min(Math.max((f.importance / maxShap) * 100, 2), 100)}%` }} 
-                             />
-                           </div>
-                         </div>
-                       ));
-                     })()}
-                   </div>
-                 </div>
 
-                 {result.counterfactual_example && Object.keys(result.counterfactual_example).length > 0 && (
-                   <div className="gs-card p-6 bg-info-50/50">
-                     <h3 className="text-[14px] font-semibold text-info-800 mb-4 border-b border-info-100 pb-2 flex items-center gap-2">
-                       <Brain className="w-4 h-4"/> Counterfactual Example
-                     </h3>
-                     <p className="text-[13px] text-warm-600 mb-2">Changing the protected attribute alters the prediction:</p>
-                     <pre className="text-[11px] bg-white p-3 rounded-lg border border-warm-200 overflow-x-auto text-warm-800">
-                       {JSON.stringify(result.counterfactual_example, null, 2)}
-                     </pre>
-                   </div>
-                 )}
-              </div>
+              {result.counterfactual_example && Object.keys(result.counterfactual_example).length > 0 && (
+                <div className="gs-card p-6 bg-info-50/50">
+                  <h3 className="text-[14px] font-semibold text-info-800 mb-4 border-b border-info-100 pb-2 flex items-center gap-2">
+                    <Brain className="w-4 h-4"/> Counterfactual Example
+                  </h3>
+                  <p className="text-[13px] text-warm-600 mb-2">Changing the protected attribute alters the prediction:</p>
+                  <pre className="text-[11px] bg-white p-3 rounded-lg border border-warm-200 overflow-x-auto text-warm-800">
+                    {JSON.stringify(result.counterfactual_example, null, 2)}
+                  </pre>
+                </div>
+              )}
 
               {/* Narrative & Remediation */}
               <NarrativeSection narrative={result.ai_narrative} />

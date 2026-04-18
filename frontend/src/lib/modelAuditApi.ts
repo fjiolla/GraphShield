@@ -12,7 +12,7 @@ export async function uploadAndAudit(
   const { data } = await api.post<StructModelAuditResponse>(
     "/api/v1/struct-model-audit/upload-and-audit",
     formData,
-    { headers: { "Content-Type": "multipart/form-data" }, timeout: 180000 }
+    { headers: { "Content-Type": "multipart/form-data" }, timeout: 360000 }
   );
   return data;
 }

@@ -37,7 +37,7 @@ export async function analyzeGraphModel(
   const { data } = await api.post<GraphModelAuditResult>(
     "/api/v1/graph-model-audit/analyze",
     formData,
-    { headers: { "Content-Type": "multipart/form-data" }, timeout: 180000 }
+    { headers: { "Content-Type": "multipart/form-data" }, timeout: 360000 }
   );
   return data;
 }

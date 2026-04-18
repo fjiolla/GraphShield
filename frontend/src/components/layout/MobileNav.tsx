@@ -9,7 +9,7 @@ import {
   BarChart3,
   FileText,
   Network,
-  Settings,
+  Brain,
 } from "lucide-react";
 
 const MOBILE_ITEMS = [
@@ -17,7 +17,7 @@ const MOBILE_ITEMS = [
   { label: "Analytics", href: "/analytics", icon: BarChart3 },
   { label: "Audit", href: "/audit", icon: FileText },
   { label: "Graph", href: "/graph-model-audit", icon: Network },
-  { label: "Settings", href: "/settings", icon: Settings },
+  { label: "Model", href: "/model-audit", icon: Brain },
 ];
 
 export function MobileNav() {

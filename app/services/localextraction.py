@@ -1,8 +1,17 @@
 import fitz  # PyMuPDF
-import pytesseract
-from PIL import Image
 from docx import Document
 from io import BytesIO
+
+# Try to import OCR dependencies — they are optional
+_OCR_AVAILABLE = False
+try:
+    import pytesseract
+    from PIL import Image
+    # Probe tesseract binary — raises if not installed
+    pytesseract.get_tesseract_version()
+    _OCR_AVAILABLE = True
+except Exception:
+    pass  # Tesseract not installed; fall back to text-only extraction
 
 
 def extract_text_from_pdf_hybrid(file_content: bytes) -> str:
@@ -11,22 +20,23 @@ def extract_text_from_pdf_hybrid(file_content: bytes) -> str:
 
     for page in doc:
         text = page.get_text().strip()
-        pix = page.get_pixmap()
-        img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
 
-        ocr_text = pytesseract.image_to_string(
-            img, config="--oem 3 --psm 6"
-        ).strip()
-
-        if len(text) > 50:
-            combined = text
-            if len(ocr_text) > 10:
-                combined += "\n" + ocr_text
+        if _OCR_AVAILABLE and len(text) <= 50:
+            # Only run OCR when the page is image-based (little/no extractable text)
+            try:
+                from PIL import Image as _Image
+                pix = page.get_pixmap()
+                img = _Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+                ocr_text = pytesseract.image_to_string(img, config="--oem 3 --psm 6").strip()
+                combined = ocr_text if ocr_text else text
+            except Exception:
+                combined = text
         else:
-            combined = ocr_text
+            combined = text
+
         final_text += combined + "\n"
 
-    return final_text
+    return final_text.strip()
 
 
 async def extract_text_from_file(file_content: bytes, file_type: str) -> str:

@@ -14,7 +14,7 @@ export async function analyzeGraphBias(
   const { data } = await api.post<GraphAnalysisResult>(
     "/api/v1/graph/analyze-bias",
     formData,
-    { headers: { "Content-Type": "multipart/form-data" } }
+    { headers: { "Content-Type": "multipart/form-data" }, timeout: 300000 }
   );
   return data;
 }
