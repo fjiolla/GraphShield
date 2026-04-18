@@ -211,6 +211,28 @@ function WizardContent() {
                     accept={{ "text/csv": [".csv"] }}
                     className="p-4 bg-white"
                   />
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-[13px] font-semibold text-warm-800 mb-1.5 block">Prediction Column (Optional)</label>
+                      <input
+                        type="text"
+                        className="w-full text-[14px] p-3 rounded-xl border border-warm-200 bg-surface focus:ring-2 focus:ring-sage-500/30"
+                        placeholder="e.g. prediction, label"
+                        value={formData.predictionCol || ""}
+                        onChange={(e) => updateFormData({ predictionCol: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[13px] font-semibold text-warm-800 mb-1.5 block">Ground Truth Column (Optional)</label>
+                      <input
+                        type="text"
+                        className="w-full text-[14px] p-3 rounded-xl border border-warm-200 bg-surface focus:ring-2 focus:ring-sage-500/30"
+                        placeholder="e.g. target, class"
+                        value={formData.groundTruthCol || ""}
+                        onChange={(e) => updateFormData({ groundTruthCol: e.target.value })}
+                      />
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

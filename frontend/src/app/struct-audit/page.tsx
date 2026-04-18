@@ -333,9 +333,13 @@ export default function StructAuditPage() {
                 <div className="gs-card p-6">
                   <h3 className="text-[14px] font-semibold text-warm-800 mb-4 uppercase tracking-wide border-b border-warm-100 pb-2">Findings</h3>
                   <div className="space-y-3">
-                    {report.findings.map((f: string, i: number) => (
-                      <div key={i} className="p-3 bg-warning-50 border border-warning-100 rounded-xl text-[13px] text-warning-800">{f}</div>
-                    ))}
+                    {report.findings.map((f: Record<string, unknown> | string, i: number) => {
+                      const fObj = typeof f === 'object' && f !== null ? (f as Record<string, string>) : null;
+                      return (
+                      <div key={i} className="p-3 bg-warning-50 border border-warning-100 rounded-xl text-[13px] text-warning-800">
+                        {typeof f === 'string' ? f : (fObj?.finding || fObj?.description || fObj?.issue || JSON.stringify(f))}
+                      </div>
+                    )})}
                   </div>
                 </div>
               )}
@@ -345,9 +349,19 @@ export default function StructAuditPage() {
                 <div className="gs-card p-6">
                   <h3 className="text-[14px] font-semibold text-warm-800 mb-4 uppercase tracking-wide border-b border-warm-100 pb-2">Recommendations</h3>
                   <div className="space-y-3">
-                    {report.recommendations.map((r: string, i: number) => (
-                      <div key={i} className="p-3 bg-success-50 border border-success-100 rounded-xl text-[13px] text-success-800">{r}</div>
-                    ))}
+                    {report.recommendations.map((r: Record<string, unknown> | string, i: number) => {
+                      if (typeof r === 'string') {
+                         return <div key={i} className="p-3 bg-success-50 border border-success-100 rounded-xl text-[13px] text-success-800">{r}</div>;
+                      }
+                      const rObj = r as Record<string, string>;
+                      return (
+                        <div key={i} className="p-4 bg-success-50 border border-success-100 rounded-xl text-[13px] text-success-800 flex flex-col gap-1">
+                          <strong className="text-success-900">{rObj.issue || rObj.problem || 'Recommendation'}</strong>
+                          <span>{rObj.solution || rObj.action || JSON.stringify(r)}</span>
+                          {rObj.affected_columns && <span className="text-[11px] font-mono mt-1 opacity-80">Columns: {rObj.affected_columns}</span>}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}

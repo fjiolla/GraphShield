@@ -27,9 +27,19 @@ def resolve_from_csv(
     from app.graph_model.csv_graph_parser import detect_node_id_column
     id_col = detect_node_id_column(pred_df)
     
+    # Fallback auto-detect if prediction_col is not provided
+    if not prediction_col:
+        cands = [c for c in pred_df.columns if 'pred' in c.lower() or 'score' in c.lower() or 'label' in c.lower() or 'class' in c.lower()]
+        if cands:
+            prediction_col = cands[0]
+        else:
+            cols = [c for c in pred_df.columns if c != id_col]
+            if cols:
+                prediction_col = cols[-1]
+
     merged = pd.merge(node_df, pred_df, left_on='node_id', right_on=id_col, how='inner')
     merged['protected_attr'] = merged[protected_attr] if protected_attr in merged.columns else None
-    merged['prediction'] = merged[prediction_col] if prediction_col in merged.columns else None
+    merged['prediction'] = merged[prediction_col] if prediction_col and prediction_col in merged.columns else None
     if ground_truth_col and ground_truth_col in merged.columns:
         merged['ground_truth'] = merged[ground_truth_col]
     else:

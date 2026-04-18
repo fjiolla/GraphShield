@@ -30,8 +30,8 @@ export async function analyzeGraphModel(
   if (payload.predictionsCsv) formData.append("predictions_csv", payload.predictionsCsv);
   if (payload.modelFile) formData.append("model_file", payload.modelFile);
   if (payload.featureCsv) formData.append("feature_csv", payload.featureCsv);
-  if (payload.predictionCol) formData.append("prediction_col", payload.predictionCol);
-  if (payload.groundTruthCol) formData.append("ground_truth_col", payload.groundTruthCol);
+  if (payload.predictionCol && payload.predictionCol.trim() !== "") formData.append("prediction_col", payload.predictionCol.trim());
+  if (payload.groundTruthCol && payload.groundTruthCol.trim() !== "") formData.append("ground_truth_col", payload.groundTruthCol.trim());
   if (payload.domain) formData.append("domain", payload.domain);
 
   const { data } = await api.post<GraphModelAuditResult>(
