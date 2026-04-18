@@ -4,12 +4,19 @@ import re
 import json
 
 nlp = None
+_NLP_AVAILABLE = False
+
 def get_nlp():
-    global nlp
+    global nlp, _NLP_AVAILABLE
     if nlp is None:
-        import spacy
-        nlp = spacy.load("en_core_web_sm")  
-    return nlp
+        try:
+            import spacy
+            nlp = spacy.load("en_core_web_sm")
+            _NLP_AVAILABLE = True
+        except Exception:
+            # Model not installed — NER will be skipped, LLM still runs on raw text
+            _NLP_AVAILABLE = False
+    return nlp if _NLP_AVAILABLE else None
 
 def clean_llm_output(output: str):
     output = re.sub(r"```json", "", output)
@@ -31,12 +38,18 @@ client = Groq(api_key=settings.GROQ_API_KEY)
 
 async def perform_dynamic_bias_profiling(text: str):
     try:
-        doc = get_nlp()(text[:10000])  
-        entities = [
-            {"text": ent.text, "label": ent.label_}
-            for ent in doc.ents
-        ]
-        total_mentions = len(entities)
+        nlp_model = get_nlp()
+        if nlp_model is not None:
+            doc = nlp_model(text[:10000])
+            entities = [
+                {"text": ent.text, "label": ent.label_}
+                for ent in doc.ents
+            ]
+            total_mentions = len(entities)
+        else:
+            # spaCy model unavailable — skip NER, LLM will analyse raw text
+            entities = []
+            total_mentions = 0
 
         prompt = f"""
             You are an expert AI system specialized in bias detection, social analysis, and linguistic interpretation.
@@ -138,12 +151,14 @@ async def perform_dynamic_bias_profiling(text: str):
 
         output = response.choices[0].message.content
         parsed_output = parse_llm_output(output)
+        # doc may be undefined if NLP was skipped — use word count as denominator
+        doc_len = len(doc) if 'doc' in dir() and doc is not None else max(len(text.split()), 1)
         return {    
             "dynamic_profile": parsed_output,
             "metadata": {
                 "document_complexity": "High" if total_mentions > 50 else "Standard",
-                "entity_density": total_mentions / len(doc) if len(doc) > 0 else 0,
-                "ner_model": "spacy_trf",
+                "entity_density": total_mentions / doc_len,
+                "ner_model": "spacy_en_core_web_sm" if total_mentions > 0 else "none",
                 "llm_model": "llama3_groq",
                 "total_entities": total_mentions
             }
