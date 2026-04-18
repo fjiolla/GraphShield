@@ -43,7 +43,13 @@ function WizardContent() {
   const handleStartAudit = async () => {
     setStep(3);
     await analyze();
-    setStep(4);
+    // Read error from store synchronously after the await resolves
+    const { error: auditError } = useGraphModelStore.getState();
+    if (auditError) {
+      setStep(2); // Return to config step so user can see the error and retry
+    } else {
+      setStep(4);
+    }
   };
 
   const renderStepper = () => (

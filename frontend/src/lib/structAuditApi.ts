@@ -16,11 +16,12 @@ export async function uploadDataset(file: File): Promise<StructUploadResponse> {
   return data;
 }
 
-export async function runAudit(): Promise<StructRunAuditResponse> {
+export async function runAudit(tableName?: string): Promise<StructRunAuditResponse> {
+  const params = tableName ? { table_name: tableName } : undefined;
   const { data } = await api.post<StructRunAuditResponse>(
     "/api/v1/struct-audit/run-audit",
     undefined,
-    { timeout: 300000 }
+    { params, timeout: 300000 }
   );
   return data;
 }

@@ -21,6 +21,12 @@ async def ingest_document(file: UploadFile = File(...)):
 
         bias_results = await perform_dynamic_bias_profiling(extracted_text)
         print(bias_results)
+
+        # Guard: if LLM parsing failed, bias_results won't have a "dynamic_profile" key
+        if "error" in bias_results or "dynamic_profile" not in bias_results:
+            detail = bias_results.get("details", bias_results.get("error", "Bias profiling failed — LLM returned an unexpected response."))
+            raise HTTPException(status_code=502, detail=str(detail))
+
         if "groups" in bias_results["dynamic_profile"]:
             quantitative_audit = await verify_contextual_bias(
                 extracted_text, 

@@ -1,15 +1,17 @@
 import fitz  # PyMuPDF
 from docx import Document
 from io import BytesIO
+import shutil
 
 # Try to import OCR dependencies — they are optional
 _OCR_AVAILABLE = False
 try:
     import pytesseract
     from PIL import Image
-    # Probe tesseract binary — raises if not installed
-    pytesseract.get_tesseract_version()
-    _OCR_AVAILABLE = True
+    # Robust check: verify the tesseract binary actually exists on PATH
+    if shutil.which("tesseract") is not None:
+        pytesseract.get_tesseract_version()
+        _OCR_AVAILABLE = True
 except Exception:
     pass  # Tesseract not installed; fall back to text-only extraction
 
@@ -30,6 +32,7 @@ def extract_text_from_pdf_hybrid(file_content: bytes) -> str:
                 ocr_text = pytesseract.image_to_string(img, config="--oem 3 --psm 6").strip()
                 combined = ocr_text if ocr_text else text
             except Exception:
+                # OCR failed at runtime (binary issue, format error, etc.) — use native text
                 combined = text
         else:
             combined = text

@@ -55,9 +55,11 @@ export const useStructStore = create<StructStore>((set, get) => ({
   },
 
   startAudit: async () => {
+    const { uploadResult } = get();
+    const tableName = uploadResult?.ingestion?.table_name;
     set({ isAuditing: true, error: null });
     try {
-      const result = await runAudit();
+      const result = await runAudit(tableName);
       set({ runAuditResult: result, isAuditing: false });
     } catch (e) {
       set({ error: (e as Error).message, isAuditing: false });
