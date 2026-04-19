@@ -192,12 +192,12 @@ function WizardContent() {
                 <label className="text-[13px] font-semibold text-warm-800 mb-1.5 block">Prediction Source *</label>
                 <select
                   className="w-full text-[14px] p-3 rounded-xl border border-warm-200 bg-surface focus:ring-2 focus:ring-sage-500/30"
-                  value={formData.predictionSource || "node_attribute"}
+                  value={formData.predictionSource || "embedded"}
                   onChange={(e) => updateFormData({ predictionSource: e.target.value })}
                 >
-                  <option value="node_attribute">Node Attribute (In-Graph)</option>
+                  <option value="embedded">Node Attribute (In-Graph)</option>
                   <option value="csv">External CSV</option>
-                  <option value="model_inference">External ML Model (.pkl)</option>
+                  <option value="model">External ML Model (.pkl)</option>
                 </select>
               </div>
 
@@ -233,6 +233,26 @@ function WizardContent() {
                       />
                     </div>
                   </div>
+                </div>
+              )}
+              {formData.predictionSource === "model" && (
+                <div className="p-4 bg-warm-50 rounded-xl border border-warm-100 space-y-4">
+                  <DropZone
+                    label="Upload Model File (.pkl)"
+                    onFileSelect={(f) => updateFormData({ modelFile: f })}
+                    selectedFile={formData.modelFile}
+                    onClear={() => updateFormData({ modelFile: undefined })}
+                    accept={{ "application/octet-stream": [".pkl"] }}
+                    className="p-4 bg-white"
+                  />
+                  <DropZone
+                    label="Feature CSV (matching training features)"
+                    onFileSelect={(f) => updateFormData({ featureCsv: f })}
+                    selectedFile={formData.featureCsv}
+                    onClear={() => updateFormData({ featureCsv: undefined })}
+                    accept={{ "text/csv": [".csv"] }}
+                    className="p-4 bg-white"
+                  />
                 </div>
               )}
             </div>
