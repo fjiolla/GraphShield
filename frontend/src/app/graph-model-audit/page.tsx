@@ -135,7 +135,9 @@ function WizardContent() {
             
             <div className="space-y-4">
               <div>
-                <label className="text-[13px] font-semibold text-warm-800 mb-1.5 block">Graph File *</label>
+                <label className="text-[13px] font-semibold text-warm-800 mb-1.5 block">
+                  {formData.format === "csv" ? "Nodes CSV (or Single Edge-List CSV) *" : "Graph File *"}
+                </label>
                 <DropZone
                   onFileSelect={(f) => updateFormData({ graphFile: f })}
                   selectedFile={formData.graphFile}
@@ -147,6 +149,20 @@ function WizardContent() {
                   }}
                 />
               </div>
+
+              {formData.format === "csv" && (
+                <div className="animate-fade-in">
+                  <label className="text-[13px] font-semibold text-warm-800 mb-1.5 block">Edges CSV (Optional)</label>
+                  <DropZone
+                    onFileSelect={(f) => updateFormData({ edgesCsv: f })}
+                    selectedFile={formData.edgesCsv}
+                    onClear={() => updateFormData({ edgesCsv: undefined })}
+                    accept={{
+                      "text/csv": [".csv"],
+                    }}
+                  />
+                </div>
+              )}
 
               <div>
                 <label className="text-[13px] font-semibold text-warm-800 mb-1.5 block">Format *</label>
