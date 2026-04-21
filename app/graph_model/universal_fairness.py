@@ -80,7 +80,8 @@ def compute_per_group_breakdown(node_df: pd.DataFrame, prediction_col='predictio
     for g in groups:
         g_df = node_df[node_df[protected_attr_col] == g]
         count = len(g_df)
-        pos_rate = float(g_df[prediction_col].mean()) if count > 0 else 0.0
+        g_pred_col = pd.to_numeric(g_df[prediction_col], errors='coerce').fillna(0)
+        pos_rate = float(g_pred_col.mean()) if count > 0 else 0.0
         acc = None
         tpr = None
         fpr = None
