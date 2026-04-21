@@ -28,14 +28,20 @@ export const useGraphModelStore = create<GraphModelStore>((set, get) => ({
 
   analyze: async () => {
     const { formData } = get();
-    if (!formData.graphFile || !formData.format || !formData.protectedAttr || !formData.predictionSource) {
-      set({ error: "Missing required fields" });
+    if (!formData.graphFile || !formData.format) {
+      set({ error: "Please upload a graph file and select its format." });
       return;
     }
+
+    // Default predictionSource to "embedded" if user never touched the dropdown
+    const payload: GraphModelAuditPayload = {
+      ...formData as GraphModelAuditPayload,
+      predictionSource: formData.predictionSource ?? "embedded",
+    };
     
     set({ isLoading: true, error: null });
     try {
-      const result = await analyzeGraphModel(formData as GraphModelAuditPayload);
+      const result = await analyzeGraphModel(payload);
       set({ result, isLoading: false });
     } catch (e) {
       set({ error: (e as Error).message, isLoading: false });
