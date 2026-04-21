@@ -19,7 +19,8 @@ api.interceptors.response.use(
     if (error.response?.data) {
       const data = error.response.data;
       if (Array.isArray(data.detail)) {
-        detail = data.detail.map((err: any) => `${err.loc?.join(".")}: ${err.msg}`).join(", ");
+        interface ValidationError { loc?: string[]; msg?: string }
+        detail = data.detail.map((err: ValidationError) => `${err.loc?.join(".")}: ${err.msg}`).join(", ");
       } else if (typeof data.detail === "string") {
         detail = data.detail;
       } else if (Array.isArray(data.errors) && data.errors.length > 0) {
