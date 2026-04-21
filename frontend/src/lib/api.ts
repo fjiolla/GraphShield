@@ -14,10 +14,23 @@ const api = axios.create({
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const detail =
-      error.response?.data?.detail ||
-      error.message ||
-      "An unexpected error occurred";
+    let detail = "An unexpected error occurred";
+    
+    if (error.response?.data) {
+      const data = error.response.data;
+      if (Array.isArray(data.detail)) {
+        detail = data.detail.map((err: any) => `${err.loc?.join(".")}: ${err.msg}`).join(", ");
+      } else if (typeof data.detail === "string") {
+        detail = data.detail;
+      } else if (Array.isArray(data.errors) && data.errors.length > 0) {
+        detail = data.errors.join(", ");
+      } else if (error.message) {
+        detail = error.message;
+      }
+    } else if (error.message) {
+      detail = error.message;
+    }
+    
     return Promise.reject(new Error(detail));
   }
 );
