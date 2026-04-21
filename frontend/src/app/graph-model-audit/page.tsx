@@ -89,9 +89,9 @@ function WizardContent() {
     if (!result?.scorecard?.universal_metrics) return [];
     return [
       { id: "root", type: "group", position: { x: 250, y: 0 }, data: { label: "Full Graph", size: result.scorecard.graph_metadata.node_count } },
-      { id: "m1", type: "metric", position: { x: 50, y: 150 }, data: { label: "Demographic Parity", value: result.scorecard.universal_metrics.demographic_parity.score || 0, status: result.scorecard.universal_metrics.demographic_parity.status } },
-      { id: "m2", type: "metric", position: { x: 300, y: 150 }, data: { label: "Equalized Odds", value: result.scorecard.universal_metrics.equalized_odds.score || 0, status: result.scorecard.universal_metrics.equalized_odds.status } },
-      { id: "m3", type: "metric", position: { x: 550, y: 150 }, data: { label: "Disparate Impact", value: result.scorecard.universal_metrics.disparate_impact.score || 0, status: result.scorecard.universal_metrics.disparate_impact.status } },
+      { id: "m1", type: "metric", position: { x: 50, y: 150 }, data: { label: "Demographic Parity", value: result.scorecard.universal_metrics?.demographic_parity?.score || 0, status: result.scorecard.universal_metrics?.demographic_parity?.status || "UNKNOWN" } },
+      { id: "m2", type: "metric", position: { x: 300, y: 150 }, data: { label: "Equalized Odds", value: result.scorecard.universal_metrics?.equalized_odds?.score || 0, status: result.scorecard.universal_metrics?.equalized_odds?.status || "UNKNOWN" } },
+      { id: "m3", type: "metric", position: { x: 550, y: 150 }, data: { label: "Disparate Impact", value: result.scorecard.universal_metrics?.disparate_impact?.score || 0, status: result.scorecard.universal_metrics?.disparate_impact?.status || "UNKNOWN" } },
     ];
   }, [result]);
 

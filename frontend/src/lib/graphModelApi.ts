@@ -22,7 +22,7 @@ export async function analyzeGraphModel(
   const formData = new FormData();
   formData.append("graph_file", payload.graphFile);
   formData.append("format", payload.format);
-  formData.append("protected_attr", payload.protectedAttr || "");
+  if (payload.protectedAttr) formData.append("protected_attr", payload.protectedAttr);
   formData.append("prediction_source", payload.predictionSource);
 
   if (payload.nodesCsv) formData.append("nodes_csv", payload.nodesCsv);

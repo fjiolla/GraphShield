@@ -41,7 +41,7 @@ async def analyze_graph_bias(
     model_file: Optional[UploadFile] = File(None),
     feature_csv: Optional[UploadFile] = File(None),
     format: str = Form(...),
-    protected_attr: str = Form(...),
+    protected_attr: Optional[str] = Form(None),
     prediction_source: str = Form(...),
     prediction_col: Optional[str] = Form(None),
     ground_truth_col: Optional[str] = Form(None),
