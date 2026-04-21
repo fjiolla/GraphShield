@@ -28,14 +28,15 @@ export const useGraphModelStore = create<GraphModelStore>((set, get) => ({
 
   analyze: async () => {
     const { formData } = get();
-    if (!formData.graphFile || !formData.format) {
-      set({ error: "Please upload a graph file and select its format." });
+    if (!formData.graphFile) {
+      set({ error: "Please upload a graph file." });
       return;
     }
 
-    // Default predictionSource to "embedded" if user never touched the dropdown
+    // Default format and predictionSource if user never touched the dropdowns
     const payload: GraphModelAuditPayload = {
       ...formData as GraphModelAuditPayload,
+      format: formData.format ?? "gml",
       predictionSource: formData.predictionSource ?? "embedded",
     };
     
