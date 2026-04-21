@@ -47,7 +47,7 @@ function WizardContent() {
     // Read error from store synchronously after the await resolves
     const { error: auditError } = useGraphModelStore.getState();
     if (auditError) {
-      setStep(2); // Return to config step so user can see the error and retry
+      router.push(`?step=2`); // Return to config step WITHOUT clearing the error
     } else {
       setStep(4);
     }
