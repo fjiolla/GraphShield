@@ -178,7 +178,7 @@ function WizardContent() {
             
             <div className="space-y-5">
               <div>
-                <label className="text-[13px] font-semibold text-warm-800 mb-1.5 block">Protected Attribute Column *</label>
+                <label className="text-[13px] font-semibold text-warm-800 mb-1.5 block">Protected Attribute Column</label>
                 <input
                   type="text"
                   className="w-full text-[14px] p-3 rounded-xl border border-warm-200 bg-surface focus:ring-2 focus:ring-sage-500/30"
@@ -261,7 +261,7 @@ function WizardContent() {
               <Button variant="outline" onClick={handlePrev}>
                 <ChevronLeft className="w-4 h-4" /> Back
               </Button>
-              <Button onClick={handleStartAudit} disabled={!formData.protectedAttr || !formData.predictionSource}>
+              <Button onClick={handleStartAudit}>
                 Run Full Audit
               </Button>
             </div>
