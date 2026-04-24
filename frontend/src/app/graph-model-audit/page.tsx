@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, Suspense } from "react";
+import React, { useMemo, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { PageWrapper } from "@/components/layout/PageWrapper";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -14,7 +14,7 @@ import { ExplainabilityPanel } from "@/components/fairness/ExplainabilityPanel";
 import { RemediationPanel } from "@/components/fairness/RemediationPanel";
 import { NarrativeSection } from "@/components/fairness/NarrativeSection";
 import { DAGCanvas } from "@/components/graph/DAGCanvas";
-import { Check, ChevronRight, ChevronLeft, AlertTriangle, Info } from "lucide-react";
+import { Check, ChevronRight, ChevronLeft, AlertTriangle, Info, LayoutDashboard, BarChart2, FileText } from "lucide-react";
 import { cn } from "@/utils/cn";
 
 type GraphFormat = "gml" | "csv" | "jsonld";
@@ -26,15 +26,22 @@ const STEPS = [
   { id: 4, title: "Report" },
 ];
 
+const REPORT_TABS = [
+  { id: "overview", label: "Overview", icon: LayoutDashboard },
+  { id: "fairness", label: "Fairness Metrics", icon: BarChart2 },
+  { id: "report", label: "AI Report", icon: FileText },
+];
+
 function WizardContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const step = parseInt(searchParams.get("step") || "1", 10);
-  
+  const [activeTab, setActiveTab] = useState("overview");
+
   const { formData, updateFormData, analyze, result, error, reset, clearError } = useGraphModelStore();
 
   const setStep = (newStep: number) => {
-    clearError(); // clear any lingering error when navigating between steps
+    clearError();
     router.push(`?step=${newStep}`);
   };
 
@@ -43,11 +50,11 @@ function WizardContent() {
 
   const handleStartAudit = async () => {
     setStep(3);
+    setActiveTab("overview");
     await analyze();
-    // Read error from store synchronously after the await resolves
     const { error: auditError } = useGraphModelStore.getState();
     if (auditError) {
-      router.push(`?step=2`); // Return to config step WITHOUT clearing the error
+      router.push(`?step=2`);
     } else {
       setStep(4);
     }
@@ -61,7 +68,7 @@ function WizardContent() {
             <div
               className={cn(
                 "w-8 h-8 rounded-full flex items-center justify-center text-[13px] font-bold transition-colors",
-                step === s.id ? "bg-sage-500 text-white shadow-card" : 
+                step === s.id ? "bg-sage-500 text-white shadow-card" :
                 step > s.id ? "bg-success-500 text-white" : "bg-warm-100 text-warm-400"
               )}
             >
@@ -98,16 +105,16 @@ function WizardContent() {
   const initialEdges = useMemo<Edge[]>(() => {
     if (!result?.scorecard?.universal_metrics) return [];
     return [
-      { id: "e1", source: "root", target: "m1", animated: true, style: { stroke: 'var(--color-warm-300)' } },
-      { id: "e2", source: "root", target: "m2", animated: true, style: { stroke: 'var(--color-warm-300)' } },
-      { id: "e3", source: "root", target: "m3", animated: true, style: { stroke: 'var(--color-warm-300)' } },
+      { id: "e1", source: "root", target: "m1", animated: true, style: { stroke: "var(--color-warm-300)" } },
+      { id: "e2", source: "root", target: "m2", animated: true, style: { stroke: "var(--color-warm-300)" } },
+      { id: "e3", source: "root", target: "m3", animated: true, style: { stroke: "var(--color-warm-300)" } },
     ];
   }, [result]);
 
   return (
     <PageWrapper>
-      <PageHeader 
-        title="Graph Model Audit Wizard" 
+      <PageHeader
+        title="Graph Model Audit Wizard"
         description="Comprehensive evaluation of topological and predictive biases."
         actions={
           step === 4 && (
@@ -127,58 +134,55 @@ function WizardContent() {
           </div>
         )}
 
+        {/* ── Step 1: Graph Data ── */}
         {step === 1 && (
-          <div className="gs-card p-6 md:p-8 animate-fade-in space-y-6">
-            <h3 className="font-display text-lg text-warm-800 border-b border-warm-100 pb-2">
-              Primary Graph Network
-            </h3>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="text-[13px] font-semibold text-warm-800 mb-1.5 block">
-                  {formData.format === "csv" ? "Nodes CSV (or Single Edge-List CSV) *" : "Graph File *"}
-                </label>
-                <DropZone
-                  onFileSelect={(f) => updateFormData({ graphFile: f })}
-                  selectedFile={formData.graphFile}
-                  onClear={() => updateFormData({ graphFile: undefined })}
-                  accept={{
-                    "application/octet-stream": [".gml"],
-                    "text/csv": [".csv"],
-                    "application/ld+json": [".jsonld", ".json"],
-                  }}
-                />
-              </div>
+          <div className="gs-card p-6 md:p-8 animate-fade-in space-y-5">
+            <h3 className="font-display text-lg text-warm-800 border-b border-warm-100 pb-2">Primary Graph Network</h3>
 
-              {formData.format === "csv" && (
-                <div className="animate-fade-in">
-                  <label className="text-[13px] font-semibold text-warm-800 mb-1.5 block">Edges CSV (Optional)</label>
-                  <DropZone
-                    onFileSelect={(f) => updateFormData({ edgesCsv: f })}
-                    selectedFile={formData.edgesCsv}
-                    onClear={() => updateFormData({ edgesCsv: undefined })}
-                    accept={{
-                      "text/csv": [".csv"],
-                    }}
-                  />
-                </div>
-              )}
-
-              <div>
-                <label className="text-[13px] font-semibold text-warm-800 mb-1.5 block">Format *</label>
-                <select
-                  className="w-full text-[14px] p-3 rounded-xl border border-warm-200 bg-surface focus:ring-2 focus:ring-sage-500/30"
-                  value={formData.format || "gml"}
-                  onChange={(e) => updateFormData({ format: e.target.value as GraphFormat })}
-                >
-                  <option value="gml">GML (Graph Modeling Language)</option>
-                  <option value="csv">CSV (Edge List)</option>
-                  <option value="jsonld">JSON-LD</option>
-                </select>
-              </div>
+            <div>
+              <label className="text-[13px] font-semibold text-warm-800 mb-1.5 block">Format *</label>
+              <select
+                className="w-full text-[14px] p-3 rounded-xl border border-warm-200 bg-surface focus:ring-2 focus:ring-sage-500/30"
+                value={formData.format || "gml"}
+                onChange={(e) => updateFormData({ format: e.target.value as GraphFormat, edgesCsv: undefined })}
+              >
+                <option value="gml">GML (Graph Modeling Language)</option>
+                <option value="csv">CSV (Edge List)</option>
+                <option value="jsonld">JSON-LD</option>
+              </select>
             </div>
 
-            <div className="flex justify-end pt-4">
+            <div>
+              <label className="text-[13px] font-semibold text-warm-800 mb-1.5 block">
+                {formData.format === "csv" ? "Nodes CSV (or Single Edge-List CSV) *" : "Graph File *"}
+              </label>
+              <DropZone
+                onFileSelect={(f) => updateFormData({ graphFile: f })}
+                selectedFile={formData.graphFile}
+                onClear={() => updateFormData({ graphFile: undefined })}
+                accept={{
+                  "application/octet-stream": [".gml"],
+                  "text/csv": [".csv"],
+                  "application/ld+json": [".jsonld", ".json"],
+                }}
+              />
+            </div>
+
+            {formData.format === "csv" && (
+              <div className="animate-fade-in">
+                <label className="text-[13px] font-semibold text-warm-800 mb-1.5 block">
+                  Edges CSV <span className="text-warm-400 font-normal">(Optional)</span>
+                </label>
+                <DropZone
+                  onFileSelect={(f) => updateFormData({ edgesCsv: f })}
+                  selectedFile={formData.edgesCsv}
+                  onClear={() => updateFormData({ edgesCsv: undefined })}
+                  accept={{ "text/csv": [".csv"] }}
+                />
+              </div>
+            )}
+
+            <div className="flex justify-end pt-2">
               <Button onClick={handleNext} disabled={!formData.graphFile}>
                 Next Step <ChevronRight className="w-4 h-4" />
               </Button>
@@ -186,15 +190,16 @@ function WizardContent() {
           </div>
         )}
 
+        {/* ── Step 2: Model Config ── */}
         {step === 2 && (
-          <div className="gs-card p-6 md:p-8 animate-fade-in space-y-6">
-            <h3 className="font-display text-lg text-warm-800 border-b border-warm-100 pb-2">
-              Model Configuration
-            </h3>
-            
-            <div className="space-y-5">
+          <div className="gs-card p-6 md:p-8 animate-fade-in space-y-5">
+            <h3 className="font-display text-lg text-warm-800 border-b border-warm-100 pb-2">Model Configuration</h3>
+
+            <div className="grid sm:grid-cols-2 gap-5">
               <div>
-                <label className="text-[13px] font-semibold text-warm-800 mb-1.5 block">Protected Attribute Column</label>
+                <label className="text-[13px] font-semibold text-warm-800 mb-1.5 block">
+                  Protected Attribute <span className="text-warm-400 font-normal">(Optional)</span>
+                </label>
                 <input
                   type="text"
                   className="w-full text-[14px] p-3 rounded-xl border border-warm-200 bg-surface focus:ring-2 focus:ring-sage-500/30"
@@ -203,7 +208,6 @@ function WizardContent() {
                   onChange={(e) => updateFormData({ protectedAttr: e.target.value })}
                 />
               </div>
-
               <div>
                 <label className="text-[13px] font-semibold text-warm-800 mb-1.5 block">Prediction Source *</label>
                 <select
@@ -216,94 +220,72 @@ function WizardContent() {
                   <option value="model">External ML Model (.pkl)</option>
                 </select>
               </div>
-
-              {formData.predictionSource === "csv" && (
-                <div className="p-4 bg-warm-50 rounded-xl border border-warm-100 space-y-4">
-                  <DropZone
-                    label="Upload Predictions CSV"
-                    onFileSelect={(f) => updateFormData({ predictionsCsv: f })}
-                    selectedFile={formData.predictionsCsv}
-                    onClear={() => updateFormData({ predictionsCsv: undefined })}
-                    accept={{ "text/csv": [".csv"] }}
-                    className="p-4 bg-white"
-                  />
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-[13px] font-semibold text-warm-800 mb-1.5 block">Prediction Column (Optional)</label>
-                      <input
-                        type="text"
-                        className="w-full text-[14px] p-3 rounded-xl border border-warm-200 bg-surface focus:ring-2 focus:ring-sage-500/30"
-                        placeholder="e.g. prediction, label"
-                        value={formData.predictionCol || ""}
-                        onChange={(e) => updateFormData({ predictionCol: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[13px] font-semibold text-warm-800 mb-1.5 block">Ground Truth Column (Optional)</label>
-                      <input
-                        type="text"
-                        className="w-full text-[14px] p-3 rounded-xl border border-warm-200 bg-surface focus:ring-2 focus:ring-sage-500/30"
-                        placeholder="e.g. target, class"
-                        value={formData.groundTruthCol || ""}
-                        onChange={(e) => updateFormData({ groundTruthCol: e.target.value })}
-                      />
-                    </div>
-                  </div>
-                </div>
-              )}
-              {formData.predictionSource === "model" && (
-                <div className="p-4 bg-warm-50 rounded-xl border border-warm-100 space-y-4">
-                  <DropZone
-                    label="Upload Model File (.pkl)"
-                    onFileSelect={(f) => updateFormData({ modelFile: f })}
-                    selectedFile={formData.modelFile}
-                    onClear={() => updateFormData({ modelFile: undefined })}
-                    accept={{ "application/octet-stream": [".pkl"] }}
-                    className="p-4 bg-white"
-                  />
-                  <DropZone
-                    label="Feature CSV (matching training features)"
-                    onFileSelect={(f) => updateFormData({ featureCsv: f })}
-                    selectedFile={formData.featureCsv}
-                    onClear={() => updateFormData({ featureCsv: undefined })}
-                    accept={{ "text/csv": [".csv"] }}
-                    className="p-4 bg-white"
-                  />
-                </div>
-              )}
             </div>
 
-            <div className="flex justify-between pt-4">
+            {formData.predictionSource === "csv" && (
+              <div className="p-4 bg-warm-50 rounded-xl border border-warm-100 space-y-4 animate-fade-in">
+                <p className="text-[12px] text-warm-500 font-medium uppercase tracking-wide">External Predictions</p>
+                <DropZone
+                  label="Upload Predictions CSV"
+                  onFileSelect={(f) => updateFormData({ predictionsCsv: f })}
+                  selectedFile={formData.predictionsCsv}
+                  onClear={() => updateFormData({ predictionsCsv: undefined })}
+                  accept={{ "text/csv": [".csv"] }}
+                  className="bg-white"
+                />
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[13px] font-semibold text-warm-800 mb-1.5 block">Prediction Column <span className="text-warm-400 font-normal">(Optional)</span></label>
+                    <input type="text" className="w-full text-[14px] p-3 rounded-xl border border-warm-200 bg-surface focus:ring-2 focus:ring-sage-500/30" placeholder="e.g. prediction, label" value={formData.predictionCol || ""} onChange={(e) => updateFormData({ predictionCol: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="text-[13px] font-semibold text-warm-800 mb-1.5 block">Ground Truth Column <span className="text-warm-400 font-normal">(Optional)</span></label>
+                    <input type="text" className="w-full text-[14px] p-3 rounded-xl border border-warm-200 bg-surface focus:ring-2 focus:ring-sage-500/30" placeholder="e.g. target, class" value={formData.groundTruthCol || ""} onChange={(e) => updateFormData({ groundTruthCol: e.target.value })} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {formData.predictionSource === "model" && (
+              <div className="p-4 bg-warm-50 rounded-xl border border-warm-100 space-y-4 animate-fade-in">
+                <p className="text-[12px] text-warm-500 font-medium uppercase tracking-wide">External ML Model Files</p>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <DropZone label="Model File (.pkl)" onFileSelect={(f) => updateFormData({ modelFile: f })} selectedFile={formData.modelFile} onClear={() => updateFormData({ modelFile: undefined })} accept={{ "application/octet-stream": [".pkl"] }} className="bg-white" />
+                  <DropZone label="Feature CSV" onFileSelect={(f) => updateFormData({ featureCsv: f })} selectedFile={formData.featureCsv} onClear={() => updateFormData({ featureCsv: undefined })} accept={{ "text/csv": [".csv"] }} className="bg-white" />
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-between pt-2">
               <Button variant="outline" onClick={handlePrev}>
                 <ChevronLeft className="w-4 h-4" /> Back
               </Button>
-              <Button onClick={handleStartAudit}>
-                Run Full Audit
-              </Button>
+              <Button onClick={handleStartAudit}>Run Full Audit</Button>
             </div>
           </div>
         )}
 
+        {/* ── Step 3: Processing ── */}
         {step === 3 && (
           <div className="h-full min-h-[400px] gs-card p-8 flex flex-col items-center justify-center text-center space-y-6 animate-fade-in">
-             <div className="relative w-24 h-24">
-                <div className="absolute inset-0 border-4 border-sage-100 rounded-full"></div>
-                <div className="absolute inset-0 border-4 border-sage-500 rounded-full border-t-transparent animate-spin"></div>
-             </div>
-             <div>
-               <h3 className="font-display text-xl text-warm-800 mb-2">Executing Pipeline...</h3>
-               <p className="text-[14px] text-warm-500 max-w-sm mx-auto">
-                 Calculating graph structural metrics, universal fairness algorithms, and compiling AI narrative report...
-               </p>
-             </div>
+            <div className="relative w-24 h-24">
+              <div className="absolute inset-0 border-4 border-sage-100 rounded-full" />
+              <div className="absolute inset-0 border-4 border-sage-500 rounded-full border-t-transparent animate-spin" />
+            </div>
+            <div>
+              <h3 className="font-display text-xl text-warm-800 mb-2">Executing Pipeline...</h3>
+              <p className="text-[14px] text-warm-500 max-w-sm mx-auto">
+                Calculating graph structural metrics, universal fairness algorithms, and compiling AI narrative report...
+              </p>
+            </div>
           </div>
         )}
 
+        {/* ── Step 4: Tabbed Report ── */}
         {step === 4 && result && (
-          <div className="space-y-8 animate-fade-in">
-            {/* Warnings Banner */}
+          <div className="space-y-6 animate-fade-in">
             {result.warnings && result.warnings.length > 0 && (
-              <div className="p-4 bg-warning-50 border border-warning-200 rounded-xl space-y-2">
+              <div className="p-4 bg-warning-50 border border-warning-200 rounded-xl space-y-1.5">
                 {result.warnings.map((w, i) => (
                   <div key={i} className="flex items-start gap-2 text-[13px] text-warning-700">
                     <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
@@ -313,56 +295,86 @@ function WizardContent() {
               </div>
             )}
 
-            <ScorecardViewer scorecard={result.scorecard} />
+            {/* Tab Bar */}
+            <div className="flex gap-1 p-1 bg-warm-100 rounded-xl">
+              {REPORT_TABS.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={cn(
+                      "flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-[13px] font-medium transition-all",
+                      activeTab === tab.id
+                        ? "bg-white text-warm-800 shadow-sm"
+                        : "text-warm-500 hover:text-warm-700"
+                    )}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span className="hidden sm:inline">{tab.label}</span>
+                  </button>
+                );
+              })}
+            </div>
 
-            {/* Key Findings + Risk Groups */}
-            {(result.scorecard.key_findings.length > 0 || result.scorecard.top_risk_groups.length > 0) && (
-              <div className="grid md:grid-cols-2 gap-6">
-                {result.scorecard.key_findings.length > 0 && (
-                  <div className="gs-card p-6">
-                    <h3 className="text-[14px] font-semibold text-warm-800 mb-4 border-b border-warm-100 pb-2">
-                      Key Findings
-                    </h3>
-                    <ul className="space-y-2">
-                      {result.scorecard.key_findings.map((f, i) => (
-                        <li key={i} className="flex items-start gap-2 text-[13px] text-warm-700">
-                          <Info className="w-4 h-4 mt-0.5 text-sage-500 flex-shrink-0" />
-                          {f}
-                        </li>
-                      ))}
-                    </ul>
+            {/* Overview Tab */}
+            {activeTab === "overview" && (
+              <div className="space-y-6 animate-fade-in">
+                <ScorecardViewer scorecard={result.scorecard} />
+
+                {(result.scorecard.key_findings.length > 0 || result.scorecard.top_risk_groups.length > 0) && (
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {result.scorecard.key_findings.length > 0 && (
+                      <div className="gs-card p-6">
+                        <h3 className="text-[14px] font-semibold text-warm-800 mb-4 border-b border-warm-100 pb-2">Key Findings</h3>
+                        <ul className="space-y-2">
+                          {result.scorecard.key_findings.map((f, i) => (
+                            <li key={i} className="flex items-start gap-2 text-[13px] text-warm-700">
+                              <Info className="w-4 h-4 mt-0.5 text-sage-500 flex-shrink-0" />
+                              {f}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {result.scorecard.top_risk_groups.length > 0 && (
+                      <div className="gs-card p-6">
+                        <h3 className="text-[14px] font-semibold text-warm-800 mb-4 border-b border-warm-100 pb-2">Top Risk Groups</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {result.scorecard.top_risk_groups.map((g, i) => (
+                            <Badge key={i} level="fail">{g}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
-                {result.scorecard.top_risk_groups.length > 0 && (
-                  <div className="gs-card p-6">
-                    <h3 className="text-[14px] font-semibold text-warm-800 mb-4 border-b border-warm-100 pb-2">
-                      Top Risk Groups
-                    </h3>
-                    <div className="flex flex-wrap gap-2">
-                      {result.scorecard.top_risk_groups.map((g, i) => (
-                        <Badge key={i} level="fail">{g}</Badge>
-                      ))}
-                    </div>
+
+                <div className="gs-card p-6">
+                  <h3 className="text-[14px] font-semibold text-warm-800 mb-4 border-b border-warm-100 pb-2">Network Visualization</h3>
+                  <ReactFlowProvider>
+                    <DAGCanvas initialNodes={initialNodes} initialEdges={initialEdges} />
+                  </ReactFlowProvider>
+                </div>
+              </div>
+            )}
+
+            {/* Fairness Metrics Tab */}
+            {activeTab === "fairness" && (
+              <div className="space-y-6 animate-fade-in">
+                {result.scorecard.global_explanation && result.scorecard.global_explanation.top_bias_drivers.length > 0 ? (
+                  <ExplainabilityPanel explanation={result.scorecard.global_explanation} />
+                ) : (
+                  <div className="gs-card p-8 text-center text-warm-400 text-[13px]">
+                    No structural bias drivers were detected. Provide a protected attribute column to enable full fairness analysis.
                   </div>
                 )}
               </div>
             )}
 
-            {/* Global Explanation */}
-            {result.scorecard.global_explanation && result.scorecard.global_explanation.top_bias_drivers.length > 0 && (
-              <ExplainabilityPanel explanation={result.scorecard.global_explanation} />
-            )}
-
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="gs-card p-6">
-                 <h3 className="text-[14px] font-semibold text-warm-800 mb-4 border-b border-warm-100 pb-2">
-                   Network Visualization
-                 </h3>
-                 <ReactFlowProvider>
-                   <DAGCanvas initialNodes={initialNodes} initialEdges={initialEdges} />
-                 </ReactFlowProvider>
-              </div>
-              <div className="space-y-6">
+            {/* AI Report Tab */}
+            {activeTab === "report" && (
+              <div className="space-y-6 animate-fade-in">
                 <NarrativeSection narrative={[
                   { title: "Fairness Summary", content: result.gemini_report.summary },
                   { title: "Bias Found", content: result.gemini_report.bias_found },
@@ -373,7 +385,7 @@ function WizardContent() {
                   { priority: result.gemini_report.severity_assessment, action: "Address Structural Bias", description: result.gemini_report.remediation, steps: ["Review structural disparity", "Implement corrective model features"] }
                 ]} />
               </div>
-            </div>
+            )}
           </div>
         )}
       </div>
