@@ -320,8 +320,43 @@ function WizardContent() {
             {/* Overview Tab */}
             {activeTab === "overview" && (
               <div className="space-y-6 animate-fade-in">
-                <ScorecardViewer scorecard={result.scorecard} />
+                {/* Score header only — no metric tables here */}
+                <div className="gs-card p-8 flex flex-col md:flex-row items-center justify-between gap-8">
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center gap-3 mb-1">
+                      <h2 className="font-display text-xl font-bold text-warm-800">Fairness Scorecard</h2>
+                      <Badge level={result.scorecard.overall_status.toLowerCase() as "pass" | "warn" | "fail" | "neutral" | "info"}>
+                        {result.scorecard.overall_status}
+                      </Badge>
+                    </div>
+                    {result.scorecard.protected_attribute && (
+                      <p className="text-[13px] text-warm-500 max-w-xl leading-relaxed">
+                        Protected attribute: <span className="font-semibold text-warm-700">{result.scorecard.protected_attribute}</span>{" "}
+                        across groups ({result.scorecard.groups_found?.join(", ")}).
+                      </p>
+                    )}
+                    <p className="text-[12px] text-warm-400 mt-2">Switch to the <span className="font-medium text-warm-600">Fairness Metrics</span> tab to see per-metric breakdowns.</p>
+                  </div>
+                  <div className="flex-shrink-0 text-center">
+                    <div className="relative inline-flex items-center justify-center">
+                      <svg className="w-24 h-24 transform -rotate-90">
+                        <circle cx="48" cy="48" r="40" strokeWidth="8" stroke="#E8E6E0" fill="none" />
+                        <circle cx="48" cy="48" r="40" strokeWidth="8" stroke="currentColor" fill="none"
+                          strokeDasharray="251.2"
+                          strokeDashoffset={251.2 - (251.2 * result.scorecard.overall_score) / 100}
+                          className={result.scorecard.overall_score >= 80 ? "text-success-500" : result.scorecard.overall_score >= 60 ? "text-warning-500" : "text-danger-500"}
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-2xl font-bold">{result.scorecard.overall_score}</span>
+                      </div>
+                    </div>
+                    <p className="text-[11px] font-medium text-warm-400 mt-2 uppercase tracking-wide">Overall Score</p>
+                  </div>
+                </div>
 
+                {/* Key Findings + Risk Groups */}
                 {(result.scorecard.key_findings.length > 0 || result.scorecard.top_risk_groups.length > 0) && (
                   <div className="grid md:grid-cols-2 gap-6">
                     {result.scorecard.key_findings.length > 0 && (
@@ -350,6 +385,7 @@ function WizardContent() {
                   </div>
                 )}
 
+                {/* Network Visualization */}
                 <div className="gs-card p-6">
                   <h3 className="text-[14px] font-semibold text-warm-800 mb-4 border-b border-warm-100 pb-2">Network Visualization</h3>
                   <ReactFlowProvider>
@@ -359,14 +395,16 @@ function WizardContent() {
               </div>
             )}
 
-            {/* Fairness Metrics Tab */}
+            {/* Fairness Metrics Tab — metric tables live here */}
             {activeTab === "fairness" && (
               <div className="space-y-6 animate-fade-in">
-                {result.scorecard.global_explanation && result.scorecard.global_explanation.top_bias_drivers.length > 0 ? (
+                <ScorecardViewer scorecard={result.scorecard} />
+                {result.scorecard.global_explanation && result.scorecard.global_explanation.top_bias_drivers.length > 0 && (
                   <ExplainabilityPanel explanation={result.scorecard.global_explanation} />
-                ) : (
-                  <div className="gs-card p-8 text-center text-warm-400 text-[13px]">
-                    No structural bias drivers were detected. Provide a protected attribute column to enable full fairness analysis.
+                )}
+                {!result.scorecard.protected_attribute && (
+                  <div className="gs-card p-6 text-center text-warm-400 text-[13px]">
+                    No protected attribute specified — Universal Fairness metrics were not computed.
                   </div>
                 )}
               </div>
