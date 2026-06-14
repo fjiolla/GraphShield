@@ -64,10 +64,13 @@ function WizardContent() {
   const handleTryDemo = async () => {
     try {
       const demoFile = await fetchDemoFile("graph", "bias_high_homophily.gml", "application/octet-stream");
-      updateFormData({ graphFile: demoFile, format: "gml", predictionSource: "embedded", protectedAttr: "group" });
+      useGraphModelStore.setState({ 
+        formData: { graphFile: demoFile, format: "gml", predictionSource: "embedded", protectedAttr: "group" },
+        error: null, 
+        result: null 
+      });
       setStep(3);
       setActiveTab("overview");
-      // Small delay to let state propagate then run
       setTimeout(async () => {
         await useGraphModelStore.getState().analyze();
         const { error: auditError } = useGraphModelStore.getState();
@@ -76,7 +79,7 @@ function WizardContent() {
         } else {
           setStep(4);
         }
-      }, 100);
+      }, 200);
     } catch (e) {
       console.error("Demo load failed:", e);
     }

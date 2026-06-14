@@ -28,12 +28,10 @@ export default function ModelAuditPage() {
         fetchDemoFile("model", "loan_caste_biased_model.pkl", "application/octet-stream"),
         fetchDemoFile("model-dataset", "loan_test_data.csv", "text/csv"),
       ]);
-      setModelFile(model);
-      setDatasetFile(dataset);
-      // Auto-trigger audit
+      useModelAuditStore.setState({ modelFile: model, datasetFile: dataset, error: null, result: null });
       setTimeout(() => {
         useModelAuditStore.getState().runAudit();
-      }, 100);
+      }, 200);
     } catch (e) {
       console.error("Demo load failed:", e);
     }

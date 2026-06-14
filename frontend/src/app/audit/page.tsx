@@ -18,11 +18,10 @@ export default function DocumentAuditPage() {
   const handleTryDemo = async () => {
     try {
       const demoFile = await fetchDemoFile("document", "Hiring_Bias_Across_Indian_Cities.pdf", "application/pdf");
-      setFile(demoFile);
-      // Auto-trigger ingest after a small delay so state updates
+      useAuditStore.setState({ file: demoFile, error: null, result: null });
       setTimeout(() => {
         useAuditStore.getState().ingest();
-      }, 100);
+      }, 200);
     } catch (e) {
       console.error("Demo load failed:", e);
     }

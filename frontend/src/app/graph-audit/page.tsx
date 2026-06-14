@@ -17,10 +17,10 @@ export default function GraphAuditPage() {
   const handleTryDemo = async () => {
     try {
       const demoFile = await fetchDemoFile("graph", "bias_high_homophily.gml", "application/octet-stream");
-      setGraphFile(demoFile);
+      useGraphStore.setState({ graphFile: demoFile, error: null, result: null });
       setTimeout(() => {
         useGraphStore.getState().analyze();
-      }, 100);
+      }, 200);
     } catch (e) {
       console.error("Demo load failed:", e);
     }

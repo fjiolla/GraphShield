@@ -36,9 +36,12 @@ export async function getDemoGraphAudit() {
  * Fetch a demo file as a File object that can be passed to upload functions.
  */
 export async function fetchDemoFile(endpoint: string, filename: string, mimeType: string): Promise<File> {
-  const response = await api.get(`/api/v1/demo-files/${endpoint}`, {
-    responseType: "blob",
-  });
-  const blob = new Blob([response.data], { type: mimeType });
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  // Use native fetch for blob downloads — axios blob handling can be inconsistent
+  const response = await fetch(`${baseUrl}/api/v1/demo-files/${endpoint}`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch demo file: ${response.status}`);
+  }
+  const blob = await response.blob();
   return new File([blob], filename, { type: mimeType });
 }

@@ -24,11 +24,11 @@ export default function StructAuditPage() {
   const handleTryDemo = async () => {
     try {
       const demoFile = await fetchDemoFile("dataset", "adult_income.csv", "text/csv");
-      setUploadFile(demoFile);
-      // Auto-trigger upload
+      useStructStore.setState({ uploadFile: demoFile, error: null });
+      // Small delay to let React re-render the file in the UI, then trigger upload
       setTimeout(() => {
         useStructStore.getState().upload();
-      }, 100);
+      }, 200);
     } catch (e) {
       console.error("Demo load failed:", e);
     }
