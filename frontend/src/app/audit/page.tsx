@@ -35,9 +35,17 @@ export default function DocumentAuditPage() {
         description="Upload text documents (PDF, DOCX, TXT) to scan for demographic and implicit bias."
         actions={
           result && (
-            <Button variant="outline" size="sm" onClick={reset}>
-              Start New Audit
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => {
+                const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/export/report?format=html`;
+                window.open(url, '_blank');
+              }}>
+                Export PDF
+              </Button>
+              <Button variant="outline" size="sm" onClick={reset}>
+                Start New Audit
+              </Button>
+            </div>
           )
         }
       />

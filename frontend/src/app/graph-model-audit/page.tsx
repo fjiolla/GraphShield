@@ -140,9 +140,17 @@ function WizardContent() {
         description="Comprehensive evaluation of topological and predictive biases."
         actions={
           step === 4 && (
-            <Button variant="outline" size="sm" onClick={() => { reset(); setStep(1); }}>
-              Start New Audit
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => {
+                const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/export/report?format=html`;
+                window.open(url, '_blank');
+              }}>
+                Export PDF
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => { reset(); setStep(1); }}>
+                Start New Audit
+              </Button>
+            </div>
           )
         }
       />

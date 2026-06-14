@@ -62,9 +62,19 @@ export default function StructAuditPage() {
         description="Ingest tabular datasets (CSV, Excel) to an isolated SQLite vault and run LLM-powered universal fairness evaluation."
         actions={
           (uploadResult || report) ? (
-            <Button variant="outline" size="sm" onClick={reset}>
-              Start New Flow
-            </Button>
+            <div className="flex gap-2">
+              {report && (
+                <Button variant="outline" size="sm" onClick={() => {
+                  const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/export/report?format=html`;
+                  window.open(url, '_blank');
+                }}>
+                  Export PDF
+                </Button>
+              )}
+              <Button variant="outline" size="sm" onClick={reset}>
+                Start New Flow
+              </Button>
+            </div>
           ) : undefined
         }
       />

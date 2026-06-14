@@ -46,9 +46,17 @@ export default function ModelAuditPage() {
         description="Upload a trained model (.pkl, .joblib) and its training/test dataset to evaluate bias across protected groups."
         actions={
           result && (
-            <Button variant="outline" size="sm" onClick={reset}>
-              Start New Audit
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => {
+                const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/api/v1/export/report?format=html`;
+                window.open(url, '_blank');
+              }}>
+                Export PDF
+              </Button>
+              <Button variant="outline" size="sm" onClick={reset}>
+                Start New Audit
+              </Button>
+            </div>
           )
         }
       />
