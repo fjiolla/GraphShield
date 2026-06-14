@@ -50,3 +50,45 @@ def struct_get_groq_client() -> Groq:
     if _struct_groq_client is None:
         _struct_groq_client = struct_init_groq()
     return _struct_groq_client
+
+def struct_generate_content(prompt: str, system_prompt: str = "") -> str:
+    """
+    Attempts to generate content using Gemini API first.
+    If it fails or the API key is missing, falls back to Groq.
+    """
+    from google import genai
+    from google.genai import types
+
+    gemini_api_key = os.getenv("GEMINI_API_KEY")
+    if gemini_api_key:
+        try:
+            client = genai.Client(api_key=gemini_api_key)
+            struct_logger.info("Attempting Gemini API generation (gemini-2.5-flash)...")
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    system_instruction=system_prompt,
+                    temperature=GROQ_TEMPERATURE
+                )
+            )
+            return response.text
+        except Exception as e:
+            struct_logger.warning("Gemini API generation failed: %s. Falling back to Groq.", e)
+    else:
+        struct_logger.warning("GEMINI_API_KEY missing. Falling back to Groq directly.")
+
+    # Fallback to Groq
+    groq_client = struct_get_groq_client()
+    messages = []
+    if system_prompt:
+        messages.append({"role": "system", "content": system_prompt})
+    messages.append({"role": "user", "content": prompt})
+
+    struct_logger.info("Attempting Groq API generation (%s)...", GROQ_MODEL_NAME)
+    response = groq_client.chat.completions.create(
+        model=GROQ_MODEL_NAME,
+        messages=messages,
+        temperature=GROQ_TEMPERATURE
+    )
+    return response.choices[0].message.content

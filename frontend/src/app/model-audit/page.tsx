@@ -13,12 +13,30 @@ import { FairnessScorePanel } from "@/components/fairness/FairnessScorePanel";
 import { RemediationPanel } from "@/components/fairness/RemediationPanel";
 import { NarrativeSection } from "@/components/fairness/NarrativeSection";
 import { StatCard } from "@/components/ui/StatCard";
+import { fetchDemoFile } from "@/lib/demoApi";
 
 export default function ModelAuditPage() {
   const { modelFile, datasetFile, setModelFile, setDatasetFile, runAudit, isLoading, result, error, reset } = useModelAuditStore();
 
   const handleStart = () => {
     runAudit();
+  };
+
+  const handleTryDemo = async () => {
+    try {
+      const [model, dataset] = await Promise.all([
+        fetchDemoFile("model", "loan_caste_biased_model.pkl", "application/octet-stream"),
+        fetchDemoFile("model-dataset", "loan_test_data.csv", "text/csv"),
+      ]);
+      setModelFile(model);
+      setDatasetFile(dataset);
+      // Auto-trigger audit
+      setTimeout(() => {
+        useModelAuditStore.getState().runAudit();
+      }, 100);
+    } catch (e) {
+      console.error("Demo load failed:", e);
+    }
   };
 
   return (
@@ -84,6 +102,16 @@ export default function ModelAuditPage() {
             >
               Analyze Model Pipeline
             </Button>
+            {!result && !isLoading && (
+              <Button
+                variant="outline"
+                className="w-full mt-2"
+                size="sm"
+                onClick={handleTryDemo}
+              >
+                Try Demo
+              </Button>
+            )}
           </div>
 
           {result && result.auto_detected && (

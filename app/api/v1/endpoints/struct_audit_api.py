@@ -1,7 +1,6 @@
 import json
 import os
 import sqlite3
-import time
 import shutil
 from datetime import datetime, timezone
 from uuid import uuid4
@@ -65,8 +64,6 @@ async def run_audit(table_name: str = Query(None, description="Table name from t
     try:
         classification = struct_classify_columns(table)
         audit = struct_run_fairness_audit(table, classification)
-        # Wait 61s for Groq free-tier TPM rate limit to reset
-        time.sleep(61)
         report = struct_generate_report(audit, classification)
         _state["report"] = report
 

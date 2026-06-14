@@ -14,6 +14,10 @@ import {
   Shield,
   ChevronLeft,
   ChevronRight,
+  BarChart3,
+  History,
+  Settings,
+  Plug,
 } from "lucide-react";
 
 interface NavItem {
@@ -25,11 +29,15 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { label: "Overview", href: "/", icon: LayoutDashboard, section: "Main" },
+  { label: "Analytics", href: "/analytics", icon: BarChart3, section: "Main" },
+  { label: "Audit Trail", href: "/audit-trail", icon: History, section: "Main" },
   { label: "Document Audit", href: "/audit", icon: FileText, section: "Audits" },
   { label: "Graph Audit", href: "/graph-audit", icon: GitFork, section: "Audits" },
   { label: "Graph Model Audit", href: "/graph-model-audit", icon: Network, section: "Audits" },
   { label: "Model Audit", href: "/model-audit", icon: Brain, section: "Audits" },
   { label: "Dataset Audit", href: "/struct-audit", icon: Table2, section: "Audits" },
+  { label: "Connections", href: "/connections", icon: Plug, section: "System" },
+  { label: "Settings", href: "/settings", icon: Settings, section: "System" },
 ];
 
 interface SidebarProps {

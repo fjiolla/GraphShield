@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
 import { MobileNav } from "./MobileNav";
+import { AIChatPanel } from "@/components/chat/AIChatPanel";
 import { cn } from "@/utils/cn";
 
 interface AppShellProps {
@@ -28,6 +29,9 @@ export function AppShell({ children }: AppShellProps) {
 
       {/* Mobile Bottom Nav */}
       <MobileNav />
+
+      {/* AI Chat Assistant — Global */}
+      <AIChatPanel />
     </div>
   );
 }

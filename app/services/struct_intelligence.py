@@ -18,9 +18,7 @@ import pandas as pd
 # from app.core.struct_local_config import GEMINI_SAMPLE_LIMIT, struct_get_gemini_model
 from app.services.struct_ingestion import struct_get_db_connection
 from app.core.struct_local_config import (
-    struct_get_groq_client,
-    GROQ_MODEL_NAME,
-    GROQ_TEMPERATURE
+    struct_generate_content
 )
 
 struct_logger = logging.getLogger("struct_intelligence")
@@ -278,34 +276,26 @@ def struct_classify_columns(
     classify_df = sample_df[columns_to_classify]
     column_profile = struct_build_column_profile(classify_df)
 
-    # Step 4: Send to Groq
+    # Step 4: Generate content
     prompt = struct_build_classification_prompt(column_profile)
 
     try:
-        client = struct_get_groq_client()
+        struct_logger.info("Generating classification for %d columns...", len(columns_to_classify))
 
-        struct_logger.info("Sending %d columns to Groq for classification...", len(columns_to_classify))
-
-        response = client.chat.completions.create(
-            model=GROQ_MODEL_NAME,
-            messages=[
-                {"role": "system", "content": "You are a data bias detection expert. Return ONLY valid JSON."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=GROQ_TEMPERATURE
+        raw_text = struct_generate_content(
+            prompt=prompt,
+            system_prompt="You are a data bias detection expert. Return ONLY valid JSON."
         )
 
-        raw_text = response.choices[0].message.content
-
-        struct_logger.debug("Groq response (first 500 chars): %s", raw_text[:500])
+        struct_logger.debug("LLM response (first 500 chars): %s", raw_text[:500])
 
     except Exception as exc:
-        struct_logger.error("Groq API call failed: %s", exc)
+        struct_logger.error("LLM API calls failed: %s", exc)
 
         fallback = {
             col: {
                 "type": "Safe",
-                "reason": f"Groq API unavailable ({exc}). Manual review required.",
+                "reason": f"LLM APIs unavailable ({exc}). Manual review required.",
             }
             for col in columns_to_classify
         }

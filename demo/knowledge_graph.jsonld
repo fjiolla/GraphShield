@@ -1,0 +1,966 @@
+{
+  "@context": {
+    "@vocab": "http://schema.org/",
+    "knows": {
+      "@type": "@id"
+    }
+  },
+  "@graph": [
+    {
+      "@id": "person_0",
+      "@type": "Person",
+      "name": "User_0",
+      "gender": "Male",
+      "age": 52,
+      "prediction": 0,
+      "ground_truth": 1,
+      "knows": [
+        "person_19",
+        "person_22",
+        "person_21"
+      ]
+    },
+    {
+      "@id": "person_1",
+      "@type": "Person",
+      "name": "User_1",
+      "gender": "Male",
+      "age": 27,
+      "prediction": 0,
+      "ground_truth": 0,
+      "knows": [
+        "person_35",
+        "person_30",
+        "person_36"
+      ]
+    },
+    {
+      "@id": "person_2",
+      "@type": "Person",
+      "name": "User_2",
+      "gender": "Male",
+      "age": 29,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_36",
+        "person_7",
+        "person_28"
+      ]
+    },
+    {
+      "@id": "person_3",
+      "@type": "Person",
+      "name": "User_3",
+      "gender": "Male",
+      "age": 31,
+      "prediction": 0,
+      "ground_truth": 1,
+      "knows": [
+        "person_36",
+        "person_26",
+        "person_21"
+      ]
+    },
+    {
+      "@id": "person_4",
+      "@type": "Person",
+      "name": "User_4",
+      "gender": "Male",
+      "age": 35,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_9",
+        "person_23",
+        "person_18"
+      ]
+    },
+    {
+      "@id": "person_5",
+      "@type": "Person",
+      "name": "User_5",
+      "gender": "Male",
+      "age": 25,
+      "prediction": 0,
+      "ground_truth": 1,
+      "knows": [
+        "person_6",
+        "person_26",
+        "person_28"
+      ]
+    },
+    {
+      "@id": "person_6",
+      "@type": "Person",
+      "name": "User_6",
+      "gender": "Male",
+      "age": 51,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_5",
+        "person_27",
+        "person_21"
+      ]
+    },
+    {
+      "@id": "person_7",
+      "@type": "Person",
+      "name": "User_7",
+      "gender": "Male",
+      "age": 22,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_2",
+        "person_19",
+        "person_36"
+      ]
+    },
+    {
+      "@id": "person_8",
+      "@type": "Person",
+      "name": "User_8",
+      "gender": "Male",
+      "age": 26,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_38",
+        "person_20",
+        "person_13"
+      ]
+    },
+    {
+      "@id": "person_9",
+      "@type": "Person",
+      "name": "User_9",
+      "gender": "Male",
+      "age": 52,
+      "prediction": 0,
+      "ground_truth": 1,
+      "knows": [
+        "person_4",
+        "person_27",
+        "person_22"
+      ]
+    },
+    {
+      "@id": "person_10",
+      "@type": "Person",
+      "name": "User_10",
+      "gender": "Male",
+      "age": 48,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_24",
+        "person_22",
+        "person_15"
+      ]
+    },
+    {
+      "@id": "person_11",
+      "@type": "Person",
+      "name": "User_11",
+      "gender": "Male",
+      "age": 46,
+      "prediction": 1,
+      "ground_truth": 0,
+      "knows": [
+        "person_25",
+        "person_34",
+        "person_27"
+      ]
+    },
+    {
+      "@id": "person_12",
+      "@type": "Person",
+      "name": "User_12",
+      "gender": "Male",
+      "age": 30,
+      "prediction": 0,
+      "ground_truth": 0,
+      "knows": [
+        "person_29",
+        "person_38",
+        "person_36"
+      ]
+    },
+    {
+      "@id": "person_13",
+      "@type": "Person",
+      "name": "User_13",
+      "gender": "Male",
+      "age": 47,
+      "prediction": 1,
+      "ground_truth": 0,
+      "knows": [
+        "person_29",
+        "person_17",
+        "person_8"
+      ]
+    },
+    {
+      "@id": "person_14",
+      "@type": "Person",
+      "name": "User_14",
+      "gender": "Male",
+      "age": 23,
+      "prediction": 0,
+      "ground_truth": 0,
+      "knows": [
+        "person_16",
+        "person_36",
+        "person_18"
+      ]
+    },
+    {
+      "@id": "person_15",
+      "@type": "Person",
+      "name": "User_15",
+      "gender": "Male",
+      "age": 46,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_35",
+        "person_31",
+        "person_20"
+      ]
+    },
+    {
+      "@id": "person_16",
+      "@type": "Person",
+      "name": "User_16",
+      "gender": "Male",
+      "age": 29,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_14",
+        "person_5"
+      ]
+    },
+    {
+      "@id": "person_17",
+      "@type": "Person",
+      "name": "User_17",
+      "gender": "Male",
+      "age": 23,
+      "prediction": 1,
+      "ground_truth": 0,
+      "knows": [
+        "person_19",
+        "person_26",
+        "person_13"
+      ]
+    },
+    {
+      "@id": "person_18",
+      "@type": "Person",
+      "name": "User_18",
+      "gender": "Male",
+      "age": 25,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_31",
+        "person_4",
+        "person_14"
+      ]
+    },
+    {
+      "@id": "person_19",
+      "@type": "Person",
+      "name": "User_19",
+      "gender": "Male",
+      "age": 35,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_17",
+        "person_0",
+        "person_15"
+      ]
+    },
+    {
+      "@id": "person_20",
+      "@type": "Person",
+      "name": "User_20",
+      "gender": "Male",
+      "age": 42,
+      "prediction": 0,
+      "ground_truth": 1,
+      "knows": [
+        "person_15",
+        "person_28",
+        "person_38"
+      ]
+    },
+    {
+      "@id": "person_21",
+      "@type": "Person",
+      "name": "User_21",
+      "gender": "Male",
+      "age": 41,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_39",
+        "person_28",
+        "person_25"
+      ]
+    },
+    {
+      "@id": "person_22",
+      "@type": "Person",
+      "name": "User_22",
+      "gender": "Male",
+      "age": 39,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_10",
+        "person_9",
+        "person_30"
+      ]
+    },
+    {
+      "@id": "person_23",
+      "@type": "Person",
+      "name": "User_23",
+      "gender": "Male",
+      "age": 33,
+      "prediction": 1,
+      "ground_truth": 0,
+      "knows": [
+        "person_4",
+        "person_25",
+        "person_34"
+      ]
+    },
+    {
+      "@id": "person_24",
+      "@type": "Person",
+      "name": "User_24",
+      "gender": "Male",
+      "age": 44,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_26",
+        "person_10",
+        "person_27"
+      ]
+    },
+    {
+      "@id": "person_25",
+      "@type": "Person",
+      "name": "User_25",
+      "gender": "Male",
+      "age": 48,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_11",
+        "person_23",
+        "person_21"
+      ]
+    },
+    {
+      "@id": "person_26",
+      "@type": "Person",
+      "name": "User_26",
+      "gender": "Male",
+      "age": 52,
+      "prediction": 1,
+      "ground_truth": 0,
+      "knows": [
+        "person_24",
+        "person_17",
+        "person_31"
+      ]
+    },
+    {
+      "@id": "person_27",
+      "@type": "Person",
+      "name": "User_27",
+      "gender": "Male",
+      "age": 51,
+      "prediction": 1,
+      "ground_truth": 0,
+      "knows": [
+        "person_9",
+        "person_6",
+        "person_29"
+      ]
+    },
+    {
+      "@id": "person_28",
+      "@type": "Person",
+      "name": "User_28",
+      "gender": "Male",
+      "age": 30,
+      "prediction": 0,
+      "ground_truth": 1,
+      "knows": [
+        "person_21",
+        "person_4",
+        "person_20"
+      ]
+    },
+    {
+      "@id": "person_29",
+      "@type": "Person",
+      "name": "User_29",
+      "gender": "Male",
+      "age": 50,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_12",
+        "person_13",
+        "person_25"
+      ]
+    },
+    {
+      "@id": "person_30",
+      "@type": "Person",
+      "name": "User_30",
+      "gender": "Male",
+      "age": 39,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_37",
+        "person_1",
+        "person_22"
+      ]
+    },
+    {
+      "@id": "person_31",
+      "@type": "Person",
+      "name": "User_31",
+      "gender": "Male",
+      "age": 34,
+      "prediction": 1,
+      "ground_truth": 0,
+      "knows": [
+        "person_15",
+        "person_18",
+        "person_26"
+      ]
+    },
+    {
+      "@id": "person_32",
+      "@type": "Person",
+      "name": "User_32",
+      "gender": "Male",
+      "age": 43,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_26",
+        "person_37",
+        "person_9"
+      ]
+    },
+    {
+      "@id": "person_33",
+      "@type": "Person",
+      "name": "User_33",
+      "gender": "Male",
+      "age": 29,
+      "prediction": 1,
+      "ground_truth": 0,
+      "knows": [
+        "person_35",
+        "person_31",
+        "person_14"
+      ]
+    },
+    {
+      "@id": "person_34",
+      "@type": "Person",
+      "name": "User_34",
+      "gender": "Male",
+      "age": 47,
+      "prediction": 1,
+      "ground_truth": 0,
+      "knows": [
+        "person_11",
+        "person_23",
+        "person_14"
+      ]
+    },
+    {
+      "@id": "person_35",
+      "@type": "Person",
+      "name": "User_35",
+      "gender": "Male",
+      "age": 44,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_15",
+        "person_1",
+        "person_33"
+      ]
+    },
+    {
+      "@id": "person_36",
+      "@type": "Person",
+      "name": "User_36",
+      "gender": "Male",
+      "age": 28,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_12",
+        "person_2",
+        "person_14"
+      ]
+    },
+    {
+      "@id": "person_37",
+      "@type": "Person",
+      "name": "User_37",
+      "gender": "Male",
+      "age": 42,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_30",
+        "person_32",
+        "person_25"
+      ]
+    },
+    {
+      "@id": "person_38",
+      "@type": "Person",
+      "name": "User_38",
+      "gender": "Male",
+      "age": 23,
+      "prediction": 0,
+      "ground_truth": 0,
+      "knows": [
+        "person_8",
+        "person_12",
+        "person_20"
+      ]
+    },
+    {
+      "@id": "person_39",
+      "@type": "Person",
+      "name": "User_39",
+      "gender": "Male",
+      "age": 40,
+      "prediction": 1,
+      "ground_truth": 0,
+      "knows": [
+        "person_21",
+        "person_12",
+        "person_19"
+      ]
+    },
+    {
+      "@id": "person_40",
+      "@type": "Person",
+      "name": "User_40",
+      "gender": "Female",
+      "age": 37,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_42",
+        "person_62",
+        "person_45"
+      ]
+    },
+    {
+      "@id": "person_41",
+      "@type": "Person",
+      "name": "User_41",
+      "gender": "Female",
+      "age": 53,
+      "prediction": 0,
+      "ground_truth": 1,
+      "knows": [
+        "person_69",
+        "person_49",
+        "person_67"
+      ]
+    },
+    {
+      "@id": "person_42",
+      "@type": "Person",
+      "name": "User_42",
+      "gender": "Female",
+      "age": 30,
+      "prediction": 0,
+      "ground_truth": 1,
+      "knows": [
+        "person_64",
+        "person_40",
+        "person_56"
+      ]
+    },
+    {
+      "@id": "person_43",
+      "@type": "Person",
+      "name": "User_43",
+      "gender": "Female",
+      "age": 25,
+      "prediction": 0,
+      "ground_truth": 0,
+      "knows": [
+        "person_54",
+        "person_64",
+        "person_68"
+      ]
+    },
+    {
+      "@id": "person_44",
+      "@type": "Person",
+      "name": "User_44",
+      "gender": "Female",
+      "age": 25,
+      "prediction": 0,
+      "ground_truth": 0,
+      "knows": [
+        "person_48",
+        "person_65",
+        "person_51"
+      ]
+    },
+    {
+      "@id": "person_45",
+      "@type": "Person",
+      "name": "User_45",
+      "gender": "Female",
+      "age": 31,
+      "prediction": 0,
+      "ground_truth": 1,
+      "knows": [
+        "person_40",
+        "person_51",
+        "person_44"
+      ]
+    },
+    {
+      "@id": "person_46",
+      "@type": "Person",
+      "name": "User_46",
+      "gender": "Female",
+      "age": 52,
+      "prediction": 0,
+      "ground_truth": 1
+    },
+    {
+      "@id": "person_47",
+      "@type": "Person",
+      "name": "User_47",
+      "gender": "Female",
+      "age": 23,
+      "prediction": 0,
+      "ground_truth": 1,
+      "knows": [
+        "person_42",
+        "person_53",
+        "person_39"
+      ]
+    },
+    {
+      "@id": "person_48",
+      "@type": "Person",
+      "name": "User_48",
+      "gender": "Female",
+      "age": 54,
+      "prediction": 0,
+      "ground_truth": 1,
+      "knows": [
+        "person_44",
+        "person_67"
+      ]
+    },
+    {
+      "@id": "person_49",
+      "@type": "Person",
+      "name": "User_49",
+      "gender": "Female",
+      "age": 28,
+      "prediction": 0,
+      "ground_truth": 1,
+      "knows": [
+        "person_42",
+        "person_41"
+      ]
+    },
+    {
+      "@id": "person_50",
+      "@type": "Person",
+      "name": "User_50",
+      "gender": "Female",
+      "age": 44,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_65"
+      ]
+    },
+    {
+      "@id": "person_51",
+      "@type": "Person",
+      "name": "User_51",
+      "gender": "Female",
+      "age": 51,
+      "prediction": 1,
+      "ground_truth": 0,
+      "knows": [
+        "person_56",
+        "person_44",
+        "person_45"
+      ]
+    },
+    {
+      "@id": "person_52",
+      "@type": "Person",
+      "name": "User_52",
+      "gender": "Female",
+      "age": 27,
+      "prediction": 1,
+      "ground_truth": 0,
+      "knows": [
+        "person_65",
+        "person_58"
+      ]
+    },
+    {
+      "@id": "person_53",
+      "@type": "Person",
+      "name": "User_53",
+      "gender": "Female",
+      "age": 25,
+      "prediction": 0,
+      "ground_truth": 1,
+      "knows": [
+        "person_62",
+        "person_47"
+      ]
+    },
+    {
+      "@id": "person_54",
+      "@type": "Person",
+      "name": "User_54",
+      "gender": "Female",
+      "age": 43,
+      "prediction": 1,
+      "ground_truth": 0,
+      "knows": [
+        "person_43",
+        "person_56"
+      ]
+    },
+    {
+      "@id": "person_55",
+      "@type": "Person",
+      "name": "User_55",
+      "gender": "Female",
+      "age": 52,
+      "prediction": 0,
+      "ground_truth": 1,
+      "knows": [
+        "person_67",
+        "person_51",
+        "person_37"
+      ]
+    },
+    {
+      "@id": "person_56",
+      "@type": "Person",
+      "name": "User_56",
+      "gender": "Female",
+      "age": 24,
+      "prediction": 1,
+      "ground_truth": 0,
+      "knows": [
+        "person_42",
+        "person_51",
+        "person_54"
+      ]
+    },
+    {
+      "@id": "person_57",
+      "@type": "Person",
+      "name": "User_57",
+      "gender": "Female",
+      "age": 31,
+      "prediction": 0,
+      "ground_truth": 0,
+      "knows": [
+        "person_60"
+      ]
+    },
+    {
+      "@id": "person_58",
+      "@type": "Person",
+      "name": "User_58",
+      "gender": "Female",
+      "age": 46,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_52",
+        "person_60"
+      ]
+    },
+    {
+      "@id": "person_59",
+      "@type": "Person",
+      "name": "User_59",
+      "gender": "Female",
+      "age": 27,
+      "prediction": 0,
+      "ground_truth": 0
+    },
+    {
+      "@id": "person_60",
+      "@type": "Person",
+      "name": "User_60",
+      "gender": "Female",
+      "age": 36,
+      "prediction": 0,
+      "ground_truth": 1,
+      "knows": [
+        "person_62",
+        "person_57",
+        "person_66"
+      ]
+    },
+    {
+      "@id": "person_61",
+      "@type": "Person",
+      "name": "User_61",
+      "gender": "Female",
+      "age": 47,
+      "prediction": 0,
+      "ground_truth": 0,
+      "knows": [
+        "person_63"
+      ]
+    },
+    {
+      "@id": "person_62",
+      "@type": "Person",
+      "name": "User_62",
+      "gender": "Female",
+      "age": 53,
+      "prediction": 1,
+      "ground_truth": 0,
+      "knows": [
+        "person_60",
+        "person_53",
+        "person_40"
+      ]
+    },
+    {
+      "@id": "person_63",
+      "@type": "Person",
+      "name": "User_63",
+      "gender": "Female",
+      "age": 46,
+      "prediction": 0,
+      "ground_truth": 1,
+      "knows": [
+        "person_67",
+        "person_61",
+        "person_66"
+      ]
+    },
+    {
+      "@id": "person_64",
+      "@type": "Person",
+      "name": "User_64",
+      "gender": "Female",
+      "age": 26,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_42",
+        "person_43",
+        "person_18"
+      ]
+    },
+    {
+      "@id": "person_65",
+      "@type": "Person",
+      "name": "User_65",
+      "gender": "Female",
+      "age": 31,
+      "prediction": 0,
+      "ground_truth": 0,
+      "knows": [
+        "person_52",
+        "person_44",
+        "person_50"
+      ]
+    },
+    {
+      "@id": "person_66",
+      "@type": "Person",
+      "name": "User_66",
+      "gender": "Female",
+      "age": 41,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_60",
+        "person_63",
+        "person_17"
+      ]
+    },
+    {
+      "@id": "person_67",
+      "@type": "Person",
+      "name": "User_67",
+      "gender": "Female",
+      "age": 33,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_63",
+        "person_48",
+        "person_55"
+      ]
+    },
+    {
+      "@id": "person_68",
+      "@type": "Person",
+      "name": "User_68",
+      "gender": "Female",
+      "age": 23,
+      "prediction": 0,
+      "ground_truth": 1,
+      "knows": [
+        "person_43",
+        "person_4"
+      ]
+    },
+    {
+      "@id": "person_69",
+      "@type": "Person",
+      "name": "User_69",
+      "gender": "Female",
+      "age": 42,
+      "prediction": 1,
+      "ground_truth": 1,
+      "knows": [
+        "person_41",
+        "person_62",
+        "person_26"
+      ]
+    }
+  ]
+}

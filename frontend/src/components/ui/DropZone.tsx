@@ -48,6 +48,15 @@ export function DropZone({
     });
 
   if (selectedFile) {
+    const handleDownload = () => {
+      const url = URL.createObjectURL(selectedFile);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = selectedFile.name;
+      a.click();
+      URL.revokeObjectURL(url);
+    };
+
     return (
       <div
         className={cn(
@@ -55,17 +64,25 @@ export function DropZone({
           className
         )}
       >
-        <div className="w-10 h-10 rounded-xl bg-sage-50 flex items-center justify-center flex-shrink-0">
+        <button
+          onClick={handleDownload}
+          className="w-10 h-10 rounded-xl bg-sage-50 flex items-center justify-center flex-shrink-0 hover:bg-sage-100 transition-colors"
+          title="Download file"
+        >
           <FileText className="w-5 h-5 text-sage-500" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[13px] font-medium text-warm-800 truncate">
+        </button>
+        <button
+          onClick={handleDownload}
+          className="flex-1 min-w-0 text-left hover:opacity-70 transition-opacity"
+          title="Click to download"
+        >
+          <p className="text-[13px] font-medium text-warm-800 truncate underline decoration-warm-300 underline-offset-2">
             {selectedFile.name}
           </p>
           <p className="text-[12px] text-warm-400">
             {formatBytes(selectedFile.size)}
           </p>
-        </div>
+        </button>
         {onClear && (
           <button
             onClick={(e) => {

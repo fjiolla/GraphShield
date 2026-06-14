@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/Badge";
 import { useStructStore } from "@/stores/useStructStore";
 import { AlertCircle, Table2, Check, ArrowRight, Clock } from "lucide-react";
 import { StatCard } from "@/components/ui/StatCard";
+import { fetchDemoFile } from "@/lib/demoApi";
 
 export default function StructAuditPage() {
   const { 
@@ -19,6 +20,19 @@ export default function StructAuditPage() {
   } = useStructStore();
 
   const [waitTimer, setWaitTimer] = useState(0);
+
+  const handleTryDemo = async () => {
+    try {
+      const demoFile = await fetchDemoFile("dataset", "adult_income.csv", "text/csv");
+      setUploadFile(demoFile);
+      // Auto-trigger upload
+      setTimeout(() => {
+        useStructStore.getState().upload();
+      }, 100);
+    } catch (e) {
+      console.error("Demo load failed:", e);
+    }
+  };
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -77,6 +91,9 @@ export default function StructAuditPage() {
                 />
                 <Button className="w-full" onClick={handleUpload} disabled={!uploadFile || isUploading} loading={isUploading}>
                   Upload & Ingest to Vault
+                </Button>
+                <Button variant="outline" className="w-full" size="sm" onClick={handleTryDemo} disabled={isUploading}>
+                  Try Demo
                 </Button>
               </div>
             ) : (

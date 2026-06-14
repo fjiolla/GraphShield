@@ -15,7 +15,7 @@ import textwrap
 from collections import defaultdict
 from typing import Optional
 
-from app.core.struct_local_config import struct_get_groq_client, GROQ_MODEL_NAME, GROQ_TEMPERATURE
+from app.core.struct_local_config import struct_generate_content
 
 struct_logger = logging.getLogger("struct_reporting")
 
@@ -389,18 +389,14 @@ def struct_generate_report(
         metrics_json = struct_serialize_metrics_for_prompt(audit_result, column_classification)
         prompt = struct_build_report_prompt(metrics_json)
 
-        client = struct_get_groq_client()
-        struct_logger.info("Sending audit results to Groq for narrative report generation...")
-        response = client.chat.completions.create(
-            model=GROQ_MODEL_NAME,
-            messages=[
-                {"role": "system", "content": "You are a bias detection expert. Return ONLY valid JSON."},
-                {"role": "user", "content": prompt}
-            ],
-            temperature=GROQ_TEMPERATURE
+        struct_logger.info("Sending audit results to LLM for narrative report generation...")
+        
+        raw_text = struct_generate_content(
+            prompt=prompt,
+            system_prompt="You are a bias detection expert. Return ONLY valid JSON."
         )
-        raw_text = response.choices[0].message.content
-        struct_logger.debug("Groq report response (first 500 chars): %s", raw_text[:500])
+        
+        struct_logger.debug("LLM report response (first 500 chars): %s", raw_text[:500])
 
         narrative = struct_parse_report_response(raw_text)
         struct_logger.info("Groq narrative generation successful.")

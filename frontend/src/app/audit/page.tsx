@@ -10,9 +10,23 @@ import { useAuditStore } from "@/stores/useAuditStore";
 import { AlertCircle, FileText } from "lucide-react";
 import { RemediationPanel } from "@/components/fairness/RemediationPanel";
 import type { RemediationStep } from "@/types/fairness";
+import { fetchDemoFile } from "@/lib/demoApi";
 
 export default function DocumentAuditPage() {
   const { file, setFile, ingest, isLoading, result, error, reset } = useAuditStore();
+
+  const handleTryDemo = async () => {
+    try {
+      const demoFile = await fetchDemoFile("document", "Hiring_Bias_Across_Indian_Cities.pdf", "application/pdf");
+      setFile(demoFile);
+      // Auto-trigger ingest after a small delay so state updates
+      setTimeout(() => {
+        useAuditStore.getState().ingest();
+      }, 100);
+    } catch (e) {
+      console.error("Demo load failed:", e);
+    }
+  };
 
   return (
     <PageWrapper>
@@ -60,6 +74,16 @@ export default function DocumentAuditPage() {
             >
               Analyze Document
             </Button>
+            {!result && !isLoading && (
+              <Button
+                variant="outline"
+                className="w-full mt-2"
+                size="sm"
+                onClick={handleTryDemo}
+              >
+                Try Demo
+              </Button>
+            )}
           </div>
 
           {result && (

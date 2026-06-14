@@ -6,6 +6,7 @@ import { PageWrapper } from "@/components/layout/PageWrapper";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { StatCard } from "@/components/ui/StatCard";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { 
   Activity, 
   ShieldCheck, 
@@ -13,7 +14,8 @@ import {
   Network, 
   Table2, 
   Brain,
-  ArrowRight
+  ArrowRight,
+  Sparkles,
 } from "lucide-react";
 import api from "@/lib/api";
 import { getAudits } from "@/lib/systemApi";
@@ -31,12 +33,10 @@ export default function OverviewDashboard() {
   const [tableCount, setTableCount] = useState<number | null>(null);
 
   useEffect(() => {
-    // Check backend health
     api.get("/health")
       .then(() => setHealth({ status: "up", message: "API Connected & Healthy" }))
       .catch(() => setHealth({ status: "down", message: "Cannot connect to Backend API" }));
 
-    // Load real audit counts
     getAudits()
       .then((audits) => {
         setTotalAudits(audits.length);
@@ -49,7 +49,6 @@ export default function OverviewDashboard() {
       })
       .catch(() => { setTotalAudits(0); setAvgScore(0); });
 
-    // Load real table count
     listTables()
       .then(({ tables }) => setTableCount(tables.length))
       .catch(() => setTableCount(0));
@@ -62,6 +61,37 @@ export default function OverviewDashboard() {
         description="System health and quick audit actions"
       />
       
+      {/* Demo Mode Banner */}
+      <div className="mb-8">
+        <div className="gs-card p-6 border-2 border-dashed border-sage-300 bg-gradient-to-r from-sage-50 to-surface">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-sage-500 flex items-center justify-center flex-shrink-0">
+              <Sparkles className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-[15px] font-bold text-warm-800 mb-1">Live Demo Mode</h3>
+              <p className="text-[13px] text-warm-500 mb-3">
+                Each audit page has a &ldquo;Try Demo&rdquo; button that loads real bias scenarios through the full pipeline — no uploads needed.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                <Link href="/audit">
+                  <Button variant="outline" size="sm">Document Demo</Button>
+                </Link>
+                <Link href="/struct-audit">
+                  <Button variant="outline" size="sm">Dataset Demo</Button>
+                </Link>
+                <Link href="/model-audit">
+                  <Button variant="outline" size="sm">Model Demo</Button>
+                </Link>
+                <Link href="/graph-model-audit">
+                  <Button variant="outline" size="sm">Graph Demo</Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* KPI Row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard 
@@ -84,7 +114,6 @@ export default function OverviewDashboard() {
           icon={<Table2 />} 
         />
 
-        {/* API Health Card */}
         <div className="gs-card p-5 relative overflow-hidden group border border-transparent hover:border-warm-200">
           <p className="text-[12px] font-medium text-warm-400 uppercase tracking-wider mb-3">
             System Status

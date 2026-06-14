@@ -1,42 +1,67 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { PageWrapper } from "@/components/layout/PageWrapper";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { DataTable } from "@/components/ui/DataTable";
 import { Badge } from "@/components/ui/Badge";
-import { Search, History } from "lucide-react";
+import { Search, History, Loader2, Download } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 import { formatDateTime } from "@/utils/formatters";
-
-interface AuditRun {
-  id: string;
-  type: string;
-  target: string;
-  date: string;
-  status: string;
-  score: number;
-}
-
-// TODO: Connect to explicit backend DB on launch
-const MOCK_AUDITS: AuditRun[] = [];
+import { getAudits, type AuditRun } from "@/lib/systemApi";
 
 export default function AuditTrailPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [audits, setAudits] = useState<AuditRun[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredData = MOCK_AUDITS.filter(
+  useEffect(() => {
+    getAudits()
+      .then((data) => setAudits(data))
+      .catch(() => setAudits([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const filteredData = audits.filter(
     (item) =>
-      item.target.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.id.toLowerCase().includes(searchTerm.toLowerCase())
+      item.target?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      item.type?.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleExportCSV = () => {
+    if (audits.length === 0) return;
+    const headers = ["Run ID", "Type", "Target", "Date", "Status", "Score"];
+    const rows = audits.map((a) => [a.id, a.type, a.target, a.date, a.status, a.score]);
+    const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `graphshield_audit_trail_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const columns = [
     { key: "id", label: "Run ID", sortable: true, className: "font-mono text-[12px]" },
     { key: "type", label: "Audit Type", sortable: true },
     { key: "target", label: "Target / Asset", sortable: true, className: "font-medium" },
     { key: "date", label: "Date Executed", sortable: true, render: (row: AuditRun) => formatDateTime(row.date) },
-    { key: "status", label: "Status", sortable: true, render: (row: AuditRun) => <Badge level={row.status.toLowerCase() as "pass" | "warn" | "fail" | "neutral" | "info"}>{row.status}</Badge> },
-    { key: "score", label: "Score", sortable: true, render: (row: AuditRun) => <span className="metric-value font-medium">{row.score}</span> },
+    { key: "status", label: "Status", sortable: true, render: (row: AuditRun) => <Badge level={row.status?.toLowerCase() as "pass" | "warn" | "fail" | "neutral" | "info"}>{row.status?.toUpperCase()}</Badge> },
+    { key: "score", label: "Score", sortable: true, render: (row: AuditRun) => <span className="metric-value font-medium">{row.score || "—"}</span> },
   ];
+
+  if (loading) {
+    return (
+      <PageWrapper>
+        <PageHeader title="Audit Trail" description="Immutable record of all fairness audits across the organization." />
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 text-sage-500 animate-spin" />
+        </div>
+      </PageWrapper>
+    );
+  }
 
   return (
     <PageWrapper>
@@ -51,15 +76,20 @@ export default function AuditTrailPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-warm-400" />
             <input
               type="text"
-              placeholder="Search ID or Asset..."
+              placeholder="Search ID, Asset, or Type..."
               className="w-full pl-9 pr-4 py-2 bg-warm-50 border border-warm-200 rounded-xl text-[13px] focus:outline-none focus:ring-2 focus:ring-sage-500/30"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
+          {audits.length > 0 && (
+            <Button variant="outline" size="sm" onClick={handleExportCSV}>
+              <Download className="w-3.5 h-3.5" />
+              Export CSV
+            </Button>
+          )}
         </div>
 
-        {/* TODO: Connect to backend GET /api/v1/audits list endpoint once created */}
         {filteredData.length > 0 ? (
           <DataTable
             columns={columns}
@@ -75,7 +105,7 @@ export default function AuditTrailPage() {
             <p className="text-sm text-warm-500 max-w-sm">
               {searchTerm
                 ? "No previous audits match your search criteria. Try a different query."
-                : "Your organization hasn't performed any fairness audits yet."}
+                : "Your organization hasn't performed any fairness audits yet. Run an audit from the Overview page to see results here."}
             </p>
           </div>
         )}

@@ -16,6 +16,7 @@ import { NarrativeSection } from "@/components/fairness/NarrativeSection";
 import { DAGCanvas } from "@/components/graph/DAGCanvas";
 import { Check, ChevronRight, ChevronLeft, AlertTriangle, Info, LayoutDashboard, BarChart2, FileText } from "lucide-react";
 import { cn } from "@/utils/cn";
+import { fetchDemoFile } from "@/lib/demoApi";
 
 type GraphFormat = "gml" | "csv" | "jsonld";
 
@@ -57,6 +58,27 @@ function WizardContent() {
       router.push(`?step=2`);
     } else {
       setStep(4);
+    }
+  };
+
+  const handleTryDemo = async () => {
+    try {
+      const demoFile = await fetchDemoFile("graph", "bias_high_homophily.gml", "application/octet-stream");
+      updateFormData({ graphFile: demoFile, format: "gml", predictionSource: "embedded", protectedAttr: "group" });
+      setStep(3);
+      setActiveTab("overview");
+      // Small delay to let state propagate then run
+      setTimeout(async () => {
+        await useGraphModelStore.getState().analyze();
+        const { error: auditError } = useGraphModelStore.getState();
+        if (auditError) {
+          router.push(`?step=2`);
+        } else {
+          setStep(4);
+        }
+      }, 100);
+    } catch (e) {
+      console.error("Demo load failed:", e);
     }
   };
 
@@ -182,7 +204,10 @@ function WizardContent() {
               </div>
             )}
 
-            <div className="flex justify-end pt-2">
+            <div className="flex justify-between pt-2">
+              <Button variant="outline" size="sm" onClick={handleTryDemo}>
+                Try Demo
+              </Button>
               <Button onClick={handleNext} disabled={!formData.graphFile}>
                 Next Step <ChevronRight className="w-4 h-4" />
               </Button>

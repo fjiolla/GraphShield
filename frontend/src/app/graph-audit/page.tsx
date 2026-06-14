@@ -9,9 +9,22 @@ import { Badge } from "@/components/ui/Badge";
 import { useGraphStore } from "@/stores/useGraphStore";
 import { AlertCircle, Network } from "lucide-react";
 import { ExplainabilityPanel } from "@/components/fairness/ExplainabilityPanel";
+import { fetchDemoFile } from "@/lib/demoApi";
 
 export default function GraphAuditPage() {
   const { graphFile, nodesFile, config, setGraphFile, setNodesFile, setConfig, analyze, isLoading, result, error, reset } = useGraphStore();
+
+  const handleTryDemo = async () => {
+    try {
+      const demoFile = await fetchDemoFile("graph", "bias_high_homophily.gml", "application/octet-stream");
+      setGraphFile(demoFile);
+      setTimeout(() => {
+        useGraphStore.getState().analyze();
+      }, 100);
+    } catch (e) {
+      console.error("Demo load failed:", e);
+    }
+  };
 
   return (
     <PageWrapper>
@@ -92,6 +105,16 @@ export default function GraphAuditPage() {
             >
               Analyze Graph Structure
             </Button>
+            {!result && !isLoading && (
+              <Button
+                variant="outline"
+                className="w-full mt-2"
+                size="sm"
+                onClick={handleTryDemo}
+              >
+                Try Demo
+              </Button>
+            )}
           </div>
 
           {result && result.graph_metadata && (
