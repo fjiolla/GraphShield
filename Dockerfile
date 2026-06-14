@@ -18,6 +18,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN python -m spacy download en_core_web_sm
 
 COPY --chown=user app ./app
+COPY --chown=user demo ./demo
 
 EXPOSE 7860
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7860"]
