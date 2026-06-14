@@ -9,179 +9,113 @@ pinned: false
 ---
 
 
-# 🛡️ GraphShield — Multi-Domain AI Fairness & Bias Audit Platform
+# 🛡️ GraphShield AI — Multi-Domain Bias Detection & Fairness Platform
 
 <div align="center">
 
-![GraphShield](https://img.shields.io/badge/GraphShield-Live-00cfff?style=for-the-badge)
+![GraphShield](https://img.shields.io/badge/GraphShield_AI-Live-00cfff?style=for-the-badge)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?style=for-the-badge&logo=fastapi&logoColor=white)
-![Next.js](https://img.shields.io/badge/Next.js-Frontend-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
+![Next.js](https://img.shields.io/badge/Next.js_14-Frontend-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
+![Gemini](https://img.shields.io/badge/Google_Gemini-Primary_LLM-4285F4?style=for-the-badge&logo=google&logoColor=white)
 ![Groq](https://img.shields.io/badge/Groq-LLaMA_3.3_70B-F55036?style=for-the-badge)
 ![Fairlearn](https://img.shields.io/badge/Fairlearn-Metrics-6A0DAD?style=for-the-badge)
 ![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
-**A unified, production-grade platform for auditing AI bias across structured datasets, trained ML models, unstructured documents, and graph-based networks — all in one place.**
+**A unified, production-grade platform for auditing AI bias across 5 modalities — structured datasets, trained ML models, unstructured documents, graph networks, and graph-based ML models.**
 
 </div>
 
 ---
 
-## 🌐 What is GraphShield?
+## 🌐 What is GraphShield AI?
 
-GraphShield is a **multi-domain AI bias detection and fairness audit system** built for real-world ML pipelines. It provides a 4-module audit framework that covers every stage of the AI lifecycle — from raw data ingestion to model predictions to graph-structured networks to document text.
+GraphShield AI is an **enterprise-grade bias detection and fairness audit system** that covers every stage of the AI lifecycle. It provides 5 distinct audit pipelines under one platform — something no other tool offers.
 
-Whether you're a data scientist looking to validate your model before deployment, a compliance officer generating audit trails, or a researcher studying structural bias in social networks, GraphShield gives you the tooling to detect, explain, and remediate bias at scale.
+Whether you're a data scientist validating models before deployment, a compliance officer generating audit trails for EU AI Act requirements, or a researcher studying structural bias in social networks, GraphShield gives you the tooling to **detect, explain, and remediate** bias at scale.
 
 ---
 
-## ✨ Features
+## ✨ Key Features
 
-### 🗃️ Module 1 — Structured Dataset Audit
-- **Multi-Format Ingestion** — Accepts CSV, JSON, SQL (PostgreSQL → SQLite transpiled), and XLSX with MIME-based format detection and auto-encoding correction
-- **Hybrid Column Intelligence** — Groq LLaMA 3.3-70B classifies every column as `Target`, `Sensitive`, `Proxy`, or `Safe` using semantic reasoning over sampled row profiles
-- **EEOC-Compliant Fairness Metrics** — Computes Disparate Impact Ratio (DIR < 0.8) and Statistical Parity Difference (|SPD| > 0.1) across all sensitive × target column combinations on the full dataset
-- **AI-Generated Explainability Report** — Groq synthesises an executive summary, per-column bias risk explanations, dataset-specific recommendations, and research-grounded citations (Mehrabi et al., 2021)
-- **Looker Studio–Ready Output** — All reports export as structured JSON with `looker_studio_ready: true`
+### 🔥 What Sets Us Apart
 
-### 🤖 Module 2 — ML Model Bias Audit
-- **Universal Model Support** — Loads scikit-learn (`.pkl`, `.joblib`), TensorFlow/Keras (`.h5`, `.keras`), PyTorch (`.pt`, `.pth`), and ONNX models via a unified `StructModelAdapter`
-- **Shadow Model Fallback** — If a model fails to load (version mismatch, missing dependency), automatically trains a LogisticRegression shadow model to continue the audit without interruption
-- **SHAP Explainability** — Model-agnostic black-box SHAP values via `shap.Explainer`, surfacing top 5 features by mean |SHAP| value
-- **Counterfactual Analysis** — Iteratively perturbs numeric features ±10% to find the decision boundary and identify minimum-change scenarios that flip a prediction
-- **GROQ AI Compliance Narrative** — Structured 5-section audit report (Verdict → Impact → Root Cause → Data vs. Model → Remediation) with exponential backoff retry and local fallback
-- **Bias Scorecard & Governance** — Per-group fairness scores, overall fairness score (0–100), audit trail UUID, and a tiered remediation plan (HIGH/MEDIUM/LOW priority)
+| Feature | GraphShield AI | Typical Bias Tools |
+|---------|---------------|-------------------|
+| Audit Modalities | **5** (Document + Tabular + ML Model + Graph Structure + Graph Model) | 1–2 |
+| LLM Intelligence | **Gemini + Groq dual-provider** with auto-fallback | Single provider or none |
+| AI Chat Assistant | **Conversational Q&A** about audit results via Gemini | ❌ |
+| Try Demo Mode | **One-click demo** on every audit page — no uploads needed | ❌ |
+| Graph Fairness | **Structural + predictive** bias in network topologies | ❌ |
+| PDF Export | **One-click professional reports** | Limited |
+| Real-time Analytics | **Live dashboard** with historical trends | ❌ |
 
-### 📄 Module 3 — Document Bias Analysis
-- **LLM-Powered Bias Profiling** — Extracts explicit and implicit bias from uploaded text using Groq LLaMA 3.3-70B with spaCy NER pre-processing (`en_core_web_sm`)
-- **Group-Level Granularity** — Identifies demographic groups (gender, ethnicity, age, profession, religion, etc.), assigns bias category, sentiment, intensity (0–1), and provides text evidence
-- **Bias Intensity Scoring** — Per-group float score (0 = no bias, 1 = extreme bias) with document-level overall bias classification (Low / Medium / High)
+---
 
-### 🔗 Module 4 — Graph Network Bias Audit
-- **Multi-Format Graph Ingestion** — Parses GML, CSV (nodes + edges), and JSON-LD graph formats
-- **Structural Fairness Metrics** — Computes homophily ratio, degree disparity, PageRank disparity, and neighbourhood representation across protected attribute groups
-- **Universal Fairness Metrics** — Demographic parity, equalized odds, disparate impact, and predictive parity via Fairlearn, normalised to 0–100 scores with PASS/WARN/FAIL status
-- **Graph Explainability** — Global structural explanation of why bias manifests in the graph topology
-- **Gemini AI Bias Report** — LLM-synthesised natural language report contextualised to the graph domain
+### 📄 Module 1 — Document Bias Audit
+- LLM-powered bias profiling using Gemini/Groq with spaCy NER
+- Detects explicit and implicit bias across demographic groups
+- Per-group intensity scoring (0–1) with text evidence
+
+### 🗃️ Module 2 — Structured Dataset Audit
+- Multi-format ingestion (CSV, JSON, SQL, XLSX)
+- Groq LLaMA 3.3-70B column classification (Target/Sensitive/Proxy/Safe)
+- EEOC-compliant fairness metrics (Disparate Impact, Statistical Parity)
+- AI-generated explainability report with recommendations
+
+### 🤖 Module 3 — ML Model Bias Audit
+- Universal model support (sklearn, TensorFlow, PyTorch, ONNX)
+- Shadow model fallback on load failures
+- SHAP explainability + counterfactual analysis
+- Bias scorecard with governance-ready remediation plan
+
+### 🔗 Module 4 — Graph Structural Audit
+- Multi-format graph ingestion (GML, CSV, JSON-LD)
+- Structural metrics: homophily, degree disparity, PageRank disparity
+- NetworkX-based topological bias detection
+
+### 🕸️ Module 5 — Graph Model Pipeline
+- End-to-end graph fairness via Fairlearn
+- Universal metrics: Demographic Parity, Equalized Odds, Disparate Impact
+- Structural metrics: Clustering disparity, prediction-centrality correlation
+- Gemini AI narrative report with regulatory context
 
 ### 🧭 Cross-Module Capabilities
-- **Unified Audit Trail** — All audit runs (dataset, model, document) are persisted to SQLite with UUIDs, timestamps, and result JSON; queryable across the full history
-- **Analytics Dashboard** — Aggregated view of all historical audits with bias status (Pass/Warn/Fail) and fairness scores
-- **Fully Dockerised** — One-command deployment with `docker build` + `docker run`
+- **AI Chat Assistant** — Ask questions about your audit results in natural language (Gemini-powered)
+- **Live Demo Mode** — Pre-loaded bias datasets on every audit page for instant demonstrations
+- **Unified Audit Trail** — All audits persisted to SQLite with full history
+- **Analytics Dashboard** — Real-time fairness trends, audit volume, status distribution
+- **PDF Export** — Professional HTML reports on every results page
+- **Splash Screen** — Animated landing with Lottie animation
+- **Dual LLM Provider** — Gemini-first with automatic Groq fallback on rate limits
 
 ---
 
 ## 🚀 Tech Stack
 
 ### Backend
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| API Framework | **FastAPI** | Async REST API with Pydantic v2 validation |
-| LLM | **LLaMA 3.3-70B via Groq** | Column classification, bias narratives, report generation |
-| LLM | **Gemini Pro (Google AI)** | Graph bias report generation |
-| Fairness | **Fairlearn** | Demographic parity, equalized odds, disparate impact |
-| Explainability | **SHAP** | Model-agnostic black-box feature importance |
-| NLP | **spaCy `en_core_web_sm`** | Named entity recognition for document bias profiling |
-| Storage | **SQLite (WAL mode)** | Local dataset vault, audit sessions, model audit trails |
-| Data | **pandas + NumPy** | DataFrame manipulation, fairness metric computation |
-| Graph | **NetworkX** | Graph loading, structural metric computation |
-| ML | **scikit-learn** | Shadow model, label encoding, logistic regression fallback |
-| Document Parsing | **PyMuPDF, python-docx, pytesseract** | Multi-format document ingestion |
-| Runtime | **Python 3.10+ / uvicorn** | ASGI server |
+| Technology | Purpose |
+|-----------|---------|
+| **FastAPI** | Async REST API with Pydantic v2 |
+| **Google Gemini 2.0 Flash** | Primary LLM — chat assistant, graph reports, explanations |
+| **Groq LLaMA 3.3-70B** | Fallback LLM — column classification, bias narratives |
+| **Fairlearn** | Demographic parity, equalized odds, disparate impact |
+| **SHAP** | Model-agnostic feature importance |
+| **spaCy** | Named entity recognition for document audit |
+| **NetworkX** | Graph loading + structural metric computation |
+| **SQLite (WAL)** | Persistent storage — datasets, audits, models |
+| **scikit-learn** | Shadow model fallback, preprocessing |
 
 ### Frontend
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| Framework | **Next.js** | React-based frontend with SSR |
-| Language | **TypeScript** | Type-safe component development |
-| Styling | **Tailwind CSS** | Utility-first dark theme UI |
-| State | **Zustand stores** | Client-side audit state management |
-| Charts | Recharts / custom components | Fairness metrics visualisation |
-
----
-
-## 📂 Project Structure
-
-```
-GraphShield/
-├── Dockerfile
-├── requirements.txt
-│
-├── app/                              # FastAPI backend
-│   ├── main.py                       # App entry point + CORS middleware
-│   │
-│   ├── api/v1/
-│   │   ├── api.py                    # Router aggregation
-│   │   └── endpoints/
-│   │       ├── audit.py              # Document bias audit endpoint
-│   │       ├── connections.py        # Health / connectivity
-│   │       ├── graph_audit.py        # /analyze-bias — graph pipeline
-│   │       ├── graph_model_audit.py  # Graph model audit endpoint
-│   │       ├── model_audit.py        # General model audit
-│   │       ├── struct_audit_api.py   # Module 1: /upload, /run-audit, /report
-│   │       ├── struct_model_audit_api.py  # Module 2: /upload-and-audit
-│   │       └── system.py             # /audits — unified audit trail
-│   │
-│   ├── core/
-│   │   ├── config.py                 # App settings, API keys
-│   │   ├── security.py               # Auth helpers
-│   │   └── struct_local_config.py    # SQLite paths, Groq client factory
-│   │
-│   ├── graph_model/                  # Module 4: Graph bias pipeline
-│   │   ├── pipeline.py               # Master 7-stage pipeline orchestrator
-│   │   ├── csv_graph_parser.py       # CSV → NetworkX graph
-│   │   ├── gml_parser.py             # GML → NetworkX graph
-│   │   ├── jsonld_parser.py          # JSON-LD → NetworkX graph
-│   │   ├── graph_validator.py        # Graph validation + protected attr check
-│   │   ├── prediction_resolver.py    # Prediction source resolution
-│   │   ├── universal_fairness.py     # Fairlearn fairness metrics
-│   │   ├── structural_fairness.py    # Homophily, degree/PageRank disparity
-│   │   ├── explainability.py         # Graph global explanation
-│   │   ├── scorecard_builder.py      # Normalised 0–100 scorecard
-│   │   ├── gemini_reporter.py        # Gemini AI narrative generation
-│   │   ├── model_loader.py           # ML model loading for graph predictions
-│   │   ├── audit_trail.py            # Run ID generation + audit record saving
-│   │   └── constants.py              # Fairness thresholds, model extensions
-│   │
-│   ├── services/                     # Modules 1, 2 & 3 services
-│   │   ├── struct_ingestion.py       # Module 1: Multi-format data ingestion
-│   │   ├── struct_intelligence.py    # Module 1: Groq column classification
-│   │   ├── struct_statistics.py      # Module 1: DIR + SPD fairness metrics
-│   │   ├── struct_reporting.py       # Module 1: Groq explainability report
-│   │   ├── struct_model_auditor.py   # Module 2: 11-step model audit pipeline
-│   │   ├── struct_model_adapter.py   # Module 2: Universal model loader
-│   │   ├── struct_explainability.py  # Module 2: SHAP + counterfactual + Groq narrative
-│   │   ├── analysis.py               # Module 3: Document bias profiling (Groq + spaCy)
-│   │   ├── extraction.py             # Module 3: Text extraction
-│   │   ├── localextraction.py        # Module 3: Local file text extraction
-│   │   ├── remediation.py            # Module 3: Remediation suggestions
-│   │   └── vector_audit.py           # Vector / embedding audit utilities
-│   │
-│   ├── schemas/                      # Pydantic v2 models
-│   │   └── struct_model_audit_schema.py
-│   │
-│   └── utils/                        # Shared utilities
-│       ├── struct_bias_metrics.py    # Bias verdict, fairness score computation
-│       ├── struct_format_utils.py    # MIME detection, encoding, sanitization
-│       └── struct_sql_transpiler.py  # PostgreSQL → SQLite transpilation
-│
-├── frontend/                         # Next.js frontend
-│   ├── src/
-│   │   ├── app/                      # Next.js App Router pages
-│   │   ├── components/
-│   │   │   ├── charts/               # Fairness metric visualisation charts
-│   │   │   ├── fairness/             # Fairness result display components
-│   │   │   ├── graph/                # Graph visualisation components
-│   │   │   ├── layout/               # Navigation, sidebar, layout
-│   │   │   └── ui/                   # Shared UI primitives
-│   │   ├── stores/                   # Zustand state stores
-│   │   ├── types/                    # TypeScript type definitions
-│   │   └── utils/                    # Frontend utilities + API clients
-│   ├── tailwind.config.ts
-│   ├── next.config.mjs
-│   └── package.json
-│
-└── audit_logs/                       # Persisted audit trail records
-```
+| Technology | Purpose |
+|-----------|---------|
+| **Next.js 14** | React-based frontend with App Router |
+| **TypeScript** | Type-safe development |
+| **Tailwind CSS** | Custom design system |
+| **Framer Motion** | Animations + splash screen |
+| **Lottie React** | Splash screen animation |
+| **Zustand** | Client-side state management |
+| **Recharts** | Fairness visualisation charts |
+| **React Flow** | Graph network visualization |
 
 ---
 
@@ -190,248 +124,99 @@ GraphShield/
 ### Prerequisites
 - Python 3.10+
 - Node.js 18+
-- A [Groq API key](https://console.groq.com)
-- A [Google AI Studio key](https://aistudio.google.com) (for graph module Gemini reports)
+- [Groq API key](https://console.groq.com)
+- [Google AI Studio key](https://aistudio.google.com) (Gemini)
 
-### Option A — Docker (Recommended)
+### Docker (Recommended)
 
 ```bash
-# Clone the repository
 git clone https://github.com/fjiolla/GraphShield.git
 cd GraphShield
 
-# Build the Docker image
 docker build -t graphshield .
-
-# Run the container
-docker run -p 8000:8000 \
-  -e GROQ_API_KEY=your_groq_key_here \
-  -e GEMINI_API_KEY=your_gemini_key_here \
+docker run -p 7860:7860 \
+  -e GROQ_API_KEY=your_key \
+  -e GEMINI_API_KEY=your_key \
   graphshield
 ```
 
-The API will be available at `http://localhost:8000`.
+### Local Development
 
----
-
-### Option B — Local Development
-
-#### Backend
-
+**Backend:**
 ```bash
-# Clone the repository
-git clone https://github.com/fjiolla/GraphShield.git
 cd GraphShield
-
-# Create a virtual environment
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
-
-# Install dependencies
+python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-
-# Download spaCy model
 python -m spacy download en_core_web_sm
 
-# Set environment variables
-cp .env.example .env
-# Edit .env and add:
-# GROQ_API_KEY=your_groq_key_here
-# GEMINI_API_KEY=your_gemini_key_here
-
-# Start the server
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+# Create .env with GROQ_API_KEY and GEMINI_API_KEY
+uvicorn app.main:app --reload --port 8000
 ```
 
-#### Frontend
-
+**Frontend:**
 ```bash
 cd GraphShield/frontend
-
-# Install dependencies
 npm install
-
-# Start the development server
 npm run dev
 ```
 
-The frontend runs on `http://localhost:3000` and expects the backend at `http://localhost:8000`.
-
----
-
-## 🔁 How the Pipelines Work
-
-### Module 1 — Structured Dataset Audit Pipeline
-
-```
-File Upload (CSV / JSON / SQL / XLSX)
-        │
-        ▼
-Format Detection  ──  MIME + extension routing
-(CSV → chardet encoding | JSON → flatten nested | SQL → transpile PostgreSQL → SQLite | XLSX → serial date handling)
-        │
-        ▼
-SQLite Ingestion  ──  local_vault.db (WAL mode)
-        │
-        ▼
-Hybrid Column Classification  ──  Groq LLaMA 3.3-70B
-(Target | Sensitive | Proxy | Safe — per column with reasoning)
-        │
-        ▼
-Fairness Metric Computation  ──  Full dataset (not sampled)
-(DIR per group vs. privileged | SPD per group | Missing rate analysis)
-        │
-        ▼
-Groq Explainability Report  ──  LLaMA 3.3-70B
-(Executive summary | Column risk explanations | Specific recommendations | Research grounding)
-        │
-        ▼
-Output: Looker Studio–ready JSON + Audit Session persisted to SQLite
-```
-
-### Module 2 — ML Model Bias Audit Pipeline
-
-```
-Model Upload (.pkl / .joblib / .h5 / .pt / .onnx) + Dataset Upload
-        │
-        ▼
-Dataset Ingestion + Column Classification  ──  Reuses Module 1 pipeline
-        │
-        ▼
-Model Loading  ──  StructModelAdapter
-(Auto-detect format | Smoke test on 3 rows | Shadow LR fallback on failure)
-        │
-        ▼
-Predictions  ──  Unified predict(X) interface across all frameworks
-        │
-        ├── Disparate Impact Ratio + Parity Gap per group
-        ├── Bias Verdict  ──  FAIR / MARGINAL / BIASED (+ Confidence)
-        ├── SHAP Values  ──  Black-box explainer (top 5 features)
-        ├── Counterfactual  ──  ±10% perturbation, up to 20 iterations
-        └── GROQ Narrative  ──  5-section compliance audit report
-                │
-                ▼
-        Governance Output  ──  Fairness scorecard | Audit trail | Remediation plan
-```
-
-### Module 4 — Graph Bias Audit Pipeline
-
-```
-Graph Upload (GML / CSV nodes+edges / JSON-LD)
-        │
-        ▼
-Stage 1: Load Graph  ──  NetworkX graph construction
-Stage 2: Validate    ──  Protected attribute presence + structural checks
-Stage 3: Predictions  ──  CSV predictions / ML model / column-based
-        │
-        ▼
-Stage 4: Fairness Metrics
-        ├── Universal (via Fairlearn):  Demographic Parity | Equalized Odds | Disparate Impact | Predictive Parity
-        └── Structural:  Homophily ratio | Degree disparity | PageRank disparity | Neighbourhood representation
-        │
-        ▼
-Stage 5: Explainability  ──  Global structural bias explanation
-Stage 6: Scorecard  ──  Normalised 0–100 composite fairness score
-Stage 7: Gemini Report  ──  Domain-contextualised AI narrative + Audit Trail
-```
+Frontend runs on `http://localhost:3000`, backend on `http://localhost:8000`.
 
 ---
 
 ## 📡 API Endpoints
 
-### Module 1 — Dataset Audit
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/v1/struct/upload` | Upload and ingest a dataset (CSV/JSON/SQL/XLSX) |
-| `POST` | `/api/v1/struct/run-audit` | Run column classification + fairness audit + report |
-| `GET`  | `/api/v1/struct/report` | Retrieve the latest audit report |
-| `GET`  | `/api/v1/struct/tables` | List all ingested tables in the vault |
-
-### Module 2 — Model Audit
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/v1/model/upload-and-audit` | Upload model + dataset, run full bias audit pipeline |
-
-### Module 3 — Document Audit
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/v1/audit/document` | Upload a document and run LLM-powered bias profiling |
-
-### Module 4 — Graph Audit
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/v1/graph/analyze-bias` | Upload graph file, run full graph bias pipeline |
-
-### System
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `GET`  | `/api/v1/system/audits` | Retrieve unified audit trail (all modules) |
-| `GET`  | `/health` | Health check |
+| `POST` | `/api/v1/audit/ingest` | Document bias audit (PDF/DOCX/TXT) |
+| `POST` | `/api/v1/struct-audit/upload` | Upload dataset to vault |
+| `POST` | `/api/v1/struct-audit/run-audit` | Run fairness audit on dataset |
+| `GET` | `/api/v1/struct-audit/report` | Get latest dataset audit report |
+| `POST` | `/api/v1/struct-model-audit/upload-and-audit` | ML model bias audit |
+| `POST` | `/api/v1/graph-model-audit/analyze` | Graph model fairness pipeline |
+| `POST` | `/api/v1/chat/ask` | AI Chat Assistant |
+| `GET` | `/api/v1/demo/all` | Pre-computed demo results |
+| `GET` | `/api/v1/demo-files/{type}` | Download demo files for Try Demo |
+| `GET` | `/api/v1/export/report` | Export audit as HTML/PDF |
+| `GET` | `/api/v1/system/audits` | Unified audit trail |
+| `GET` | `/health` | Health check |
 
 ---
 
-## 📊 Scoring & Thresholds Explained
+## 📊 Fairness Thresholds
 
-### Fairness Thresholds (EEOC-aligned)
 | Metric | Threshold | Standard |
 |--------|-----------|----------|
-| Disparate Impact Ratio | DIR < **0.8** → flagged | EEOC 4/5ths rule |
+| Disparate Impact Ratio | < **0.8** → flagged | EEOC 4/5ths rule |
 | Statistical Parity Difference | \|SPD\| > **0.1** → flagged | ±10% parity gap |
-| Minimum Group Size | < **10 rows** → unreliable warning | Statistical reliability |
-
-### Model Bias Verdict
-| Verdict | Condition | Confidence |
-|---------|-----------|-----------|
-| `FAIR` | All group DIRs ≥ 0.8 | HIGH / MEDIUM |
-| `MARGINAL` | Any DIR between 0.7–0.8 | MEDIUM |
-| `BIASED` | Any DIR < 0.8 (80% rule violated) | HIGH |
-
-### Graph Fairness Score (0–100)
-| Score Range | Status | Meaning |
-|-------------|--------|---------|
-| ≥ 80 | **PASS** | Within acceptable fairness bounds |
-| 60–79 | **WARN** | Approaching bias thresholds |
-| < 60 | **FAIL** | Significant fairness violation detected |
+| Graph Fairness Score | < **60** → FAIL, 60–79 → WARN, ≥80 → PASS | Composite score |
 
 ---
 
 ## 🔐 Data Privacy
 
-GraphShield is designed for **local-first, privacy-preserving** operation:
-- All ingested datasets are stored in a local SQLite database (`local_vault.db`) — no data leaves your infrastructure
-- Uploaded model and dataset files are deleted from disk immediately after ingestion and auditing
-- Only column profiles (dtype, unique count, 3 sample values) are sent to Groq for classification — not raw data rows
-- Audit trails contain results and metadata, not raw dataset content
+- All data stored locally in SQLite — nothing leaves your infrastructure
+- Uploaded files deleted immediately after processing
+- Only column profiles (not raw data) sent to LLMs for classification
+- Audit trails contain results/metadata, not raw dataset content
 
 ---
 
-## 🤝 Contributing
+## 📋 Regulatory Compliance
 
-Contributions are welcome! Please open an issue or submit a pull request. For major changes, open a discussion first.
-
-```bash
-# Run the backend in development mode
-uvicorn app.main:app --reload
-
-# Run frontend in development mode
-cd frontend && npm run dev
-```
-
----
-
-## 📝 License
-
-This project is open source under the [MIT License](LICENSE).
+GraphShield AI helps organizations comply with:
+- **EU AI Act** — Article 9 (risk management), Article 10 (data governance)
+- **US EEOC Guidelines** — 4/5ths rule for disparate impact
+- **India AI Regulations** — Constitutional Article 15 (prohibition of discrimination)
 
 ---
 
 <div align="center">
 
-**⭐ If GraphShield helped you build fairer AI, give it a star!**
+**Every company deploying AI will legally need a tool like this. We built it.**
 
-Built with ❤️ for responsible, auditable AI
+Built for the Google Solution Challenge 2025
 
 [![GitHub](https://img.shields.io/badge/GitHub-GraphShield-181717?style=for-the-badge&logo=github)](https://github.com/fjiolla/GraphShield)
-[![FastAPI Docs](https://img.shields.io/badge/API_Docs-Swagger_UI-009688?style=for-the-badge&logo=fastapi)](http://localhost:8000/docs)
 
 </div>
