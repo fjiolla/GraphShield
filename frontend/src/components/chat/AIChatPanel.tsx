@@ -4,6 +4,10 @@ import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MessageCircle, X, Send, Bot, User, Loader2 } from "lucide-react";
 import { sendChatMessage } from "@/lib/chatApi";
+import { useAuditStore } from "@/stores/useAuditStore";
+import { useStructStore } from "@/stores/useStructStore";
+import { useModelAuditStore } from "@/stores/useModelAuditStore";
+import { useGraphModelStore } from "@/stores/useGraphModelStore";
 import { cn } from "@/utils/cn";
 
 interface Message {
@@ -60,8 +64,30 @@ export function AIChatPanel() {
     setInput("");
     setIsLoading(true);
 
+    // Gather current audit context from all stores
+    const contextParts: string[] = [];
+    const docResult = useAuditStore.getState().result;
+    if (docResult) {
+      const profile = docResult.findings?.qualitative_analysis?.dynamic_profile;
+      contextParts.push(`CURRENT PAGE - Document Audit of "${docResult.filename}": ${JSON.stringify(profile?.summary || {})}. Groups found: ${JSON.stringify(profile?.groups?.map((g: { group_name: string; bias_type: string; bias_intensity: number }) => ({ name: g.group_name, type: g.bias_type, intensity: g.bias_intensity })) || [])}`);
+    }
+    const structReport = useStructStore.getState().report;
+    if (structReport) {
+      contextParts.push(`CURRENT PAGE - Dataset Audit: risk=${structReport.risk_level}, bias_detected=${structReport.bias_detected}, summary=${structReport.summary || 'N/A'}`);
+    }
+    const modelResult = useModelAuditStore.getState().result;
+    if (modelResult) {
+      contextParts.push(`CURRENT PAGE - Model Audit: verdict=${modelResult.verdict?.bias_verdict}, score=${modelResult.governance?.overall_fairness_score}, worst_group=${modelResult.verdict?.worst_group}, reason=${modelResult.verdict?.verdict_reason}`);
+    }
+    const graphResult = useGraphModelStore.getState().result;
+    if (graphResult) {
+      contextParts.push(`CURRENT PAGE - Graph Audit: score=${graphResult.scorecard?.overall_score}, status=${graphResult.scorecard?.overall_status}, findings=${JSON.stringify(graphResult.scorecard?.key_findings || [])}`);
+    }
+
+    const auditContext = contextParts.length > 0 ? contextParts.join("\n\n") : undefined;
+
     try {
-      const response = await sendChatMessage(messageText);
+      const response = await sendChatMessage(messageText, auditContext);
       const assistantMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",

@@ -65,16 +65,16 @@ def llm_generate(
     system_prompt: Optional[str] = None,
     max_tokens: int = 2048,
     json_mode: bool = False,
-) -> str:
+) -> tuple[str, str]:
     """
     Generate text using Gemini first, fall back to Groq on failure.
-    Returns the raw string response from the LLM.
+    Returns a tuple of (response_text, provider_name).
     """
     # Try Gemini first
     try:
         result = _call_gemini(prompt, system_prompt, max_tokens)
         logger.info("LLM response from Gemini")
-        return result
+        return result, "gemini"
     except Exception as e:
         logger.warning("Gemini failed (%s), falling back to Groq", str(e)[:100])
 
@@ -82,7 +82,7 @@ def llm_generate(
     try:
         result = _call_groq(prompt, system_prompt, max_tokens, json_mode)
         logger.info("LLM response from Groq (fallback)")
-        return result
+        return result, "groq"
     except Exception as e:
         logger.error("Both Gemini and Groq failed: %s", str(e))
         raise RuntimeError(f"All LLM providers failed. Last error: {str(e)}")
@@ -97,7 +97,7 @@ def llm_generate_json(
     Generate a JSON response. Tries Gemini first, then Groq with json_mode.
     Returns parsed dict.
     """
-    raw = llm_generate(prompt, system_prompt, max_tokens, json_mode=True)
+    raw, _ = llm_generate(prompt, system_prompt, max_tokens, json_mode=True)
 
     # Strip markdown code fences if present
     cleaned = raw.strip()

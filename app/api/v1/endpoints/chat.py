@@ -113,31 +113,29 @@ async def chat_ask(request: ChatRequest):
     # Build context
     audit_context = request.audit_context or _get_recent_audits_context()
 
-    system_prompt = """You are GraphShield AI Assistant — a friendly, knowledgeable expert in AI fairness, bias detection, and responsible AI.
+    system_prompt = """You are GraphShield AI Assistant — a smart, friendly AI assistant embedded in a bias detection platform.
 
-You have a warm, conversational tone. When users greet you casually (like "hey", "hi", "hello"), respond naturally and friendly — just like a helpful colleague would. Don't overthink it.
+You behave like ChatGPT. You can answer ANY question the user asks — whether it's about their audit results, general AI/ML concepts, fairness, coding, life advice, or literally anything else. You are not limited to bias topics only.
 
-When users ask about technical topics, you can help with:
-- Explaining fairness metrics (Disparate Impact, Demographic Parity, Equalized Odds, etc.)
-- Interpreting audit results and identifying concerning patterns
-- Suggesting remediation strategies for detected bias
-- Explaining regulatory requirements (EU AI Act, EEOC guidelines, India's AI regulations)
-- Making technical bias reports understandable to non-technical stakeholders
+However, you have special context: you can see the user's current audit results (if any are active). Use this to give specific, data-driven answers when they ask about their audits.
 
-Be concise and natural. Don't be overly formal. If someone says "hey", just say hey back and ask how you can help — don't dump a wall of text about audits."""
+IMPORTANT RULES:
+- If the user asks about a specific audit type (e.g., "explain the graph audit") but that audit was NOT run (not in context), clearly say: "I don't see any [graph/model/dataset] audit results right now. It looks like you ran a [document] audit — would you like me to explain those results instead?"
+- Be conversational and natural. Short greetings get short replies.
+- You can answer general questions about AI, bias, fairness, coding, math, or anything else — you're not restricted.
+- When audit context IS available, reference specific numbers, groups, and findings from it.
+- Never make up audit results that aren't in the context provided."""
 
-    prompt = f"""CONTEXT (recent audit history from this system):
+    prompt = f"""CURRENT AUDIT CONTEXT (what the user is looking at right now):
 {audit_context}
 
-USER: {request.message}
+USER MESSAGE: {request.message}
 
-Respond naturally. If it's a greeting, be friendly and brief. If it's a question, be helpful and reference the audit context only if relevant."""
+Respond naturally. Be helpful, specific, and conversational."""
 
     try:
-        reply = llm_generate(prompt, system_prompt=system_prompt, max_tokens=1024)
-        # Determine which provider was used based on the gateway logs
-        provider = "gemini"  # Default assumption (gateway tries Gemini first)
-        return ChatResponse(reply=reply.strip(), provider=provider)
+        reply, _ = llm_generate(prompt, system_prompt=system_prompt, max_tokens=1024)
+        return ChatResponse(reply=reply.strip(), provider="gemini")
     except Exception as e:
         logger.error("Chat failed: %s", e)
         raise HTTPException(status_code=502, detail=f"AI assistant unavailable: {str(e)}")
